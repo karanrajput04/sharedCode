@@ -1,0 +1,141 @@
+package com.translation.test;
+
+import com.aventstack.extentreports.*;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.json.JSONObject;
+import org.w3c.dom.Document;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+public class TranslationTestSuite {
+
+    public static void main(String[] args) throws Exception {
+        // Load inputs
+        String xmlInput = Files.readString(Path.of("input.xml"));
+        String json1 = Files.readString(Path.of("input1.json"));
+        String json2 = Files.readString(Path.of("input2.json"));
+        String text = Files.readString(Path.of("input.txt"));
+
+        // Call translation engine (dummy for now)
+        String actualOutput = TranslationEngine.translate(xmlInput, json1, json2, text);
+
+        // Parse engine output
+        JSONObject outputJson = new JSONObject(actualOutput);
+
+        // Load mapping
+        List<MappingRow> mappings = MappingReader.readExcel("mapping.xlsx");
+
+        // Setup ExtentReports
+        ExtentHtmlReporter reporter = new ExtentHtmlReporter("TranslationReport.html");
+        ExtentReports extent = new ExtentReports();
+        extent.attachReporter(reporter);
+        ExtentTest test = extent.createTest("Translation Test Results");
+
+        for (MappingRow row : mappings) {
+            String expected = InputExtractor.extract(row, xmlInput, json1, json2, text);
+            String actual = OutputExtractor.extract(row.targetPath, outputJson);
+
+            if (expected.equals(actual)) {
+                test.pass(row.targetPath + " matched: " + actual);
+            } else {
+                test.fail(row.targetPath + " mismatch. Expected: " + expected + ", Found: " + actual);
+            }
+        }
+
+        extent.flush();
+    }
+}
+
+class MappingRow {
+    String sourceType;
+    String sourcePath;
+    String targetPath;
+    String condition;
+    String transform;
+}
+
+class MappingReader {
+    public static List<MappingRow> readExcel(String filePath) throws Exception {
+        List<MappingRow> mappings = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(new FileInputStream(filePath));
+        Sheet sheet = workbook.getSheetAt(0);
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            MappingRow m = new MappingRow();
+            m.sourceType = row.getCell(0).getStringCellValue();
+            m.sourcePath = row.getCell(1).getStringCellValue();
+            m.targetPath = row.getCell(2).getStringCellValue();
+            m.condition = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : null;
+            m.transform = row.getCell(4) != null ? row.getCell(4).getStringCellValue() : null;
+            mappings.add(m);
+        }
+        workbook.close();
+        return mappings;
+    }
+}
+
+class InputExtractor {
+    public static String extract(MappingRow row, String xml, String json1, String json2, String text) throws Exception {
+        switch (row.sourceType.toUpperCase()) {
+            case "XML":
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes()));
+                return XPathUtil.getValue(doc, row.sourcePath);
+            case "JSON1":
+                return JsonUtil.getValue(new JSONObject(json1), row.sourcePath);
+            case "JSON2":
+                return JsonUtil.getValue(new JSONObject(json2), row.sourcePath);
+            case "TEXT":
+                return TextUtil.getValue(text, row.sourcePath);
+            default:
+                return "";
+        }
+    }
+}
+
+class OutputExtractor {
+    public static String extract(String path, JSONObject output) throws Exception {
+        return JsonUtil.getValue(output, path);
+    }
+}
+
+class TranslationEngine {
+    public static String translate(String xml, String json1, String json2, String text) {
+        // Replace with actual engine call (API or CLI)
+        return "{\"status\":\"OK\"}";
+    }
+}
+
+class XPathUtil {
+    public static String getValue(Document doc, String xpath) {
+        // Dummy return — implement real XPath logic
+        return "xml-value";
+    }
+}
+
+class JsonUtil {
+    public static String getValue(JSONObject json, String path) {
+        String[] parts = path.split("\\.");
+        Object current = json;
+        for (String part : parts) {
+            if (current instanceof JSONObject)
+                current = ((JSONObject) current).opt(part);
+            else
+                return "";
+        }
+        return current != null ? current.toString() : "";
+    }
+}
+
+class TextUtil {
+    public static String getValue(String text, String path) {
+        // Format: key=Position or keyName if delimited by '=' or something else
+        return "text-value";
+    }
+}
