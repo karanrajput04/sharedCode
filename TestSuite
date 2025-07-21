@@ -139,3 +139,28 @@ class TextUtil {
         return "text-value";
     }
 }
+class TextUtil1 {
+    // Extracts value from text input based on configured start and end markers
+    public static String extractValueFromText(String textInput, String startMarker, String endMarker) {
+        int startIndex = textInput.indexOf(startMarker);
+        int endIndex = textInput.indexOf(endMarker, startIndex + startMarker.length());
+
+        if (startIndex != -1 && endIndex != -1) {
+            return textInput.substring(startIndex + startMarker.length(), endIndex).trim();
+        }
+        return "";
+    }
+
+    // Parses delimited key=value strings like "name=John;age=25" into a map
+    public static Map<String, String> parseDelimitedText(String input, String pairDelimiter, String keyValueDelimiter) {
+        Map<String, String> map = new HashMap<>();
+        String[] pairs = input.split(pairDelimiter);
+        for (String pair : pairs) {
+            String[] keyValue = pair.split(keyValueDelimiter, 2);
+            if (keyValue.length == 2) {
+                map.put(keyValue[0].trim(), keyValue[1].trim());
+            }
+        }
+        return map;
+    }
+}
