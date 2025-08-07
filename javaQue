@@ -1,0 +1,481 @@
+## ✅ **CORE JAVA (Advanced Level)**
+
+### 1. **What are the differences between `HashMap`, `LinkedHashMap`, and `TreeMap`?**
+
+* `HashMap` – No ordering guarantee, allows one null key.
+* `LinkedHashMap` – Maintains insertion order.
+* `TreeMap` – Sorted by natural order or custom comparator, does not allow null key.
+
+---
+
+### 2. **What is the difference between `==` and `.equals()`?**
+
+* `==` checks **reference equality**.
+* `.equals()` checks **value equality** (can be overridden).
+
+---
+
+### 3. **What is the contract between `hashCode()` and `equals()`?**
+
+* If two objects are equal (`equals()`), they **must** have the same hash code.
+* Violating this breaks collections like `HashMap`.
+
+---
+
+### 4. **Explain the difference between `final`, `finally`, and `finalize()`**
+
+* `final` – Keyword to mark variable/ method/ class as unchangeable.
+* `finally` – Block that always executes after try-catch.
+* `finalize()` – Method called by GC before destroying an object (deprecated in Java 9+).
+
+---
+
+### 5. **What is the difference between `wait()`, `sleep()`, and `yield()`?**
+
+* `sleep()` – Pauses thread for specific time.
+* `wait()` – Releases the lock and waits.
+* `yield()` – Hints to the scheduler to give other threads a chance.
+
+---
+
+## ✅ **MULTITHREADING / CONCURRENCY**
+
+### 6. **What is the difference between `synchronized` block and `Lock` interface?**
+
+* `synchronized` – Intrinsic locking, no try-lock or timeout.
+* `Lock` – Explicit locking (`ReentrantLock`), offers better control with `tryLock()` and fairness.
+
+---
+
+### 7. **What are the benefits of using `ExecutorService`?**
+
+* Manages thread pools.
+* Better resource utilization.
+* Allows for async task submission via `submit()` and `invokeAll()`.
+
+---
+
+### 8. **Explain `volatile` keyword and when to use it.**
+
+* Ensures visibility of changes to variables across threads.
+* Use when multiple threads read/write a variable and atomicity is not required.
+
+---
+
+## ✅ **JAVA 8+ FEATURES**
+
+### 9. **What are functional interfaces? Give examples.**
+
+* Interface with a **single abstract method**.
+* Examples: `Runnable`, `Callable`, `Predicate<T>`, `Function<T, R>`, `Consumer<T>`.
+
+---
+
+### 10. **Explain `Stream API`. How is it different from collections?**
+
+* Stream API is for **processing sequences of elements** (map, filter, reduce).
+* It's **declarative**, **lazy**, and **supports parallel processing**.
+
+---
+
+### 11. **What is the difference between `map()` and `flatMap()`?**
+
+* `map()` – Transforms each element.
+* `flatMap()` – Flattens nested structures (e.g. list of lists to single list).
+
+---
+
+## ✅ **SPRING FRAMEWORK**
+
+### 12. **What is the difference between `@Component`, `@Service`, `@Repository`, and `@Controller`?**
+
+* All are stereotype annotations.
+* `@Component` – Generic bean.
+* `@Service` – Service layer logic.
+* `@Repository` – Persistence logic (adds exception translation).
+* `@Controller` – Web controller.
+
+---
+
+### 13. **What are the scopes of Spring beans?**
+
+* `singleton` (default), `prototype`, `request`, `session`, `application`, `websocket`.
+
+---
+
+### 14. **Difference between `@Autowired` and `@Inject`?**
+
+* Both do dependency injection.
+* `@Autowired` – Spring-specific.
+* `@Inject` – JSR-330 standard.
+
+---
+
+### 15. **What is the difference between `BeanFactory` and `ApplicationContext`?**
+
+* `BeanFactory` – Basic container, lazy initialization.
+* `ApplicationContext` – Advanced container, supports AOP, event propagation, etc.
+
+---
+
+### 16. **How does Spring AOP work?**
+
+* Uses **proxies** (JDK dynamic or CGLIB) to inject cross-cutting concerns.
+* Common for logging, transactions, security.
+
+---
+
+## ✅ **HIBERNATE / JPA**
+
+### 17. **What is the difference between `get()` and `load()`?**
+
+* `get()` – Returns `null` if not found, hits DB immediately.
+* `load()` – Returns proxy, throws `ObjectNotFoundException` if not found.
+
+---
+
+### 18. **Explain cascading in Hibernate.**
+
+* Cascade operations like `persist`, `merge`, `remove`, etc., to child entities.
+* Example: `@OneToMany(cascade = CascadeType.ALL)`
+
+---
+
+### 19. **What is the N+1 problem? How to avoid it?**
+
+* One query for parent, N queries for children.
+* Avoid using **JOIN FETCH** or batch fetching.
+
+---
+
+## ✅ **DESIGN PATTERNS & BEST PRACTICES**
+
+### 20. **Which design patterns have you used in real-world projects?**
+
+Examples to mention:
+
+* Singleton (for shared objects).
+* Factory (for creating objects).
+* Strategy (for algorithm selection).
+* Builder (for complex object construction).
+* Observer (event handling).
+* Proxy (for logging, security).
+
+---
+
+## ✅ **MICROSERVICES (if applicable)**
+
+### 21. **How do you manage communication between microservices?**
+
+* **REST APIs** (synchronous).
+* **Kafka / RabbitMQ** (asynchronous).
+* **gRPC** for high performance.
+
+---
+
+### 22. **How do you handle configuration in microservices?**
+
+* Centralized configuration using **Spring Cloud Config Server**.
+* Use of `application.yml` with profiles.
+
+---
+
+### 23. **What is circuit breaker? How is it implemented?**
+
+* Prevents cascading failure.
+* Implemented using **Resilience4j**, **Hystrix**.
+* Example: `@CircuitBreaker(name = "serviceA", fallbackMethod = "fallback")`
+
+---
+
+## ✅ **DATABASE / SQL / OPTIMIZATION**
+
+### 24. **What are best practices for optimizing SQL queries from Java?**
+
+* Use indexed columns in WHERE clause.
+* Use prepared statements.
+* Avoid N+1 queries.
+* Use connection pooling (e.g., HikariCP).
+
+---
+
+## ✅ **SCENARIO-BASED / SYSTEM DESIGN QUESTIONS**
+
+### 25. **How would you design a thread-safe cache in Java?**
+
+* Use `ConcurrentHashMap`.
+* Optionally wrap with `ReadWriteLock` for more control.
+* Use `Guava Cache` or `Caffeine` for LRU cache.
+
+---
+
+### 26. **How do you handle memory leaks in Java applications?**
+
+* Use profilers (e.g., VisualVM, YourKit).
+* Check for unclosed resources.
+* Avoid static references to heavy objects.
+
+---
+
+## ✅ **BEHAVIORAL / MANAGERIAL QUESTIONS**
+
+### 27. **How do you ensure code quality across your team?**
+
+* Code reviews.
+* Static analysis tools (SonarQube, PMD).
+* Unit & integration tests.
+* Adherence to coding standards.
+
+---
+
+### 28. **How do you handle production incidents?**
+
+* Triage logs and alerts.
+* Rollback or hotfix.
+* RCA and implement corrective action.
+
+---
+
+===================================================================
+
+
+## ✅ **JAVA + SPRING BOOT INTERVIEW QUESTIONS**
+
+### ⚙️ 1. **What are the key differences between Spring and Spring Boot?**
+
+| Spring                       | Spring Boot                               |
+| ---------------------------- | ----------------------------------------- |
+| Requires configuration       | Auto-configures based on classpath        |
+| No embedded server           | Comes with embedded Tomcat/Jetty/Undertow |
+| Manual dependency management | Starter dependencies simplify it          |
+| Focus on flexibility         | Focus on convention over configuration    |
+
+---
+
+### 🔁 2. **How does Spring Boot auto-configuration work?**
+
+* Uses `@EnableAutoConfiguration` (included in `@SpringBootApplication`)
+* Internally checks classpath and config to apply beans via `spring.factories`
+* Example: If `spring-boot-starter-web` is present, it configures `DispatcherServlet`, `Tomcat`, etc.
+
+---
+
+### 🧵 3. **Difference between `@Component`, `@Bean`, and `@Configuration`**
+
+* `@Component`: Marks class as a Spring-managed bean (auto-detected via component scan)
+* `@Bean`: Declares a bean inside a `@Configuration` class
+* `@Configuration`: Marks the class that provides bean definitions
+
+---
+
+### 💉 4. **How is dependency injection handled in Spring Boot?**
+
+* By default, it uses **constructor injection** (recommended)
+* Also supports field injection (`@Autowired`) and setter injection
+* Component scanning + bean registration + context loading = DI
+
+---
+
+### 🔐 5. **How do you secure a Spring Boot REST API?**
+
+* Add `spring-boot-starter-security`
+* Configure `SecurityFilterChain` in modern Spring Security (since Spring Security 5.7+)
+* Use annotations like `@PreAuthorize`, `@Secured`
+
+Example:
+
+```java
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http.csrf().disable()
+        .authorizeHttpRequests()
+        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+        .anyRequest().authenticated()
+        .and().httpBasic();
+    return http.build();
+}
+```
+
+---
+
+### ⚙️ 6. **What is Spring Boot Actuator?**
+
+* Provides endpoints to monitor and manage application in production
+* Examples:
+
+  * `/actuator/health`
+  * `/actuator/metrics`
+  * `/actuator/env`
+* Add in `application.yml` to enable more endpoints:
+
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+```
+
+---
+
+### 🧪 7. **How do you write unit and integration tests in Spring Boot?**
+
+* **Unit Testing**: Use `@WebMvcTest`, `@MockBean`, `Mockito`
+* **Integration Testing**: Use `@SpringBootTest`, `TestRestTemplate`
+* Tools: JUnit5, Mockito, AssertJ, Testcontainers (for DB tests)
+
+---
+
+### 🧵 8. **What is the difference between `@RequestParam`, `@PathVariable`, and `@RequestBody`?**
+
+| Annotation      | Use Case               | Example              |
+| --------------- | ---------------------- | -------------------- |
+| `@RequestParam` | For query parameters   | `/users?id=1`        |
+| `@PathVariable` | For URI path variables | `/users/1`           |
+| `@RequestBody`  | For JSON body          | `{ "name": "John" }` |
+
+---
+
+### ⚡ 9. **How do you handle exceptions globally in Spring Boot?**
+
+Use `@ControllerAdvice` with `@ExceptionHandler`
+
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleNotFound(EntityNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+}
+```
+
+---
+
+### 🧊 10. **How does Spring Boot handle external configuration?**
+
+* Uses **`application.properties` or `application.yml`**
+* Supports:
+
+  * Profiles: `application-dev.yml`, `application-prod.yml`
+  * Environment variables
+  * Command-line arguments
+
+---
+
+### 📦 11. **What is the use of Spring Boot starters?**
+
+* Group dependencies for specific functionality.
+* Examples:
+
+  * `spring-boot-starter-web`
+  * `spring-boot-starter-data-jpa`
+  * `spring-boot-starter-security`
+  * `spring-boot-starter-actuator`
+
+---
+
+### 🔄 12. **How do you handle database operations in Spring Boot?**
+
+* Use **Spring Data JPA**:
+
+  * `CrudRepository`, `JpaRepository`, `@Query`
+  * Entity mapping with `@Entity`, `@Id`, `@GeneratedValue`
+  * Connection via `spring.datasource.*` in YAML
+
+---
+
+### 📂 13. **How do you manage transactions in Spring Boot?**
+
+* Use `@Transactional`
+* Can apply on method/class level
+* Rollbacks on unchecked exceptions by default
+
+---
+
+### 🚀 14. **How do you deploy a Spring Boot application?**
+
+* As a standalone **JAR** with embedded Tomcat (`java -jar app.jar`)
+* Or as a WAR (with changes in `pom.xml` + `SpringBootServletInitializer`)
+
+---
+
+### 🧱 15. **Explain the Spring Boot project structure best practices.**
+
+```plaintext
+com.example.project
+├── controller
+├── service
+├── repository
+├── model/entity
+├── dto
+├── exception
+├── config
+└── ProjectApplication.java
+```
+
+* Promotes clean separation of layers (MVC)
+* Easier to maintain, scale, and test
+
+---
+
+### 🌐 16. **What is `@EnableAutoConfiguration` and how does it work?**
+
+* Enables Spring Boot to auto-configure your app based on dependencies
+* Looks for `META-INF/spring.factories` to register auto-config classes
+
+---
+
+### 🗂 17. **What is the use of profiles in Spring Boot?**
+
+* Define multiple configuration environments like `dev`, `test`, `prod`
+* Example:
+
+```yaml
+spring:
+  profiles:
+    active: dev
+```
+
+Use `@Profile("dev")` to load beans conditionally
+
+---
+
+### 📦 18. **How do you consume external APIs in Spring Boot?**
+
+* Use `RestTemplate` (legacy) or `WebClient` (recommended in reactive)
+
+```java
+WebClient webClient = WebClient.create();
+String response = webClient.get()
+    .uri("https://api.example.com/data")
+    .retrieve()
+    .bodyToMono(String.class)
+    .block();
+```
+
+---
+
+### ☑️ 19. **What are some production best practices with Spring Boot?**
+
+* Use Actuator + centralized logging (ELK, Splunk)
+* Implement health checks
+* Use configuration vaults (Vault, AWS Parameter Store)
+* Use APM tools (New Relic, Dynatrace)
+* Containerize with Docker
+
+---
+
+### ⛓ 20. **How does Spring Boot handle circular dependencies?**
+
+* Will throw `BeanCurrentlyInCreationException` unless resolved via:
+
+  * Constructor vs setter injection
+  * `@Lazy` annotation
+
+---
+
+If you're appearing for an **interview with microservices or cloud exposure**, I can share **Spring Boot + Microservices** set next.
+
+---
