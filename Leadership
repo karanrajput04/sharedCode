@@ -1,0 +1,151 @@
+
+## ✅ **Leadership & Team Handling Interview Questions (with Sample Answers)**
+
+---
+
+### **1. How do you manage multiple projects and priorities simultaneously?**
+
+**Answer:**
+
+> I start by understanding the scope and business impact of each project. I work with stakeholders to align on priorities, then break down work using tools like Jira and assign owners. I ensure teams are not overbooked by enforcing WIP limits and regular sync-ups. For critical overlaps, I escalate early and negotiate timelines based on capacity and risk.
+
+---
+
+### **2. How do you ensure code quality across your team?**
+
+**Answer:**
+
+> I enforce a layered quality approach — starting with peer code reviews, static code analysis (like SonarQube), and automated unit/integration testing. I’ve also introduced internal code walkthroughs, PR templates, and reusable checklists on Confluence to build a culture of clean code and accountability.
+
+---
+
+### **3. How do you handle underperforming team members?**
+
+**Answer:**
+
+> I first observe the pattern — is it skill, motivation, or process? Then I have a private 1:1 to understand their perspective. I offer support through mentoring or training. I set clear, measurable short-term goals with regular checkpoints. If there’s no improvement, I escalate through HR or reassign responsibilities in the best interest of the project.
+
+---
+
+### **4. How do you keep your team motivated during high-pressure releases?**
+
+**Answer:**
+
+> I lead by example and keep communication open. I divide large tasks into achievable chunks and celebrate small wins. I ensure everyone understands the value of their contribution. I also recognize burnout signs early and balance workloads when needed. Post-release, I always appreciate the effort and conduct a blameless retrospective.
+
+---
+
+### **5. How do you manage cross-functional dependencies?**
+
+**Answer:**
+
+> I identify upstream and downstream dependencies early and establish strong communication channels with other teams (via Slack/Teams/Jira). I often use RACI matrices and maintain interface contracts (like Swagger for APIs). If blockers arise, I escalate to cross-team forums or involve program managers to align on delivery.
+
+---
+
+### **6. How do you ensure timely releases with minimal production issues?**
+
+**Answer:**
+
+> I focus on strong planning, risk mitigation, and automated regression testing. Before release, I ensure:
+
+* QA sign-off and test coverage
+* Performance and security testing
+* Release checklist in Confluence
+* Rollback strategy is ready
+  We also do dry runs in staging and follow a release window to avoid conflicts.
+
+---
+
+### **7. How do you onboard new team members efficiently?**
+
+**Answer:**
+
+> I maintain a structured onboarding plan:
+
+* Day 1: Access setup, intro to tools/process
+* Week 1: Buddy assignment, tech overview
+* First 2–4 weeks: Focused KT, shadowing, and small tasks
+  I track progress weekly and ensure they feel included through 1:1s and sprint ceremonies.
+
+---
+
+### **8. How do you deal with conflicts within your team?**
+
+**Answer:**
+
+> I address conflicts early and in private. I listen to both sides objectively and try to find common ground. If the conflict is technical, I organize a brainstorming or spike. If it’s personal, I involve HR if needed. My goal is to restore trust and keep focus on project goals.
+
+---
+
+### **9. How do you ensure knowledge sharing in a growing team?**
+
+**Answer:**
+
+> I encourage:
+
+* Internal demos after every sprint
+* Bi-weekly tech knowledge sessions
+* Documentation in Confluence
+* Code ownership rotation
+  This helps reduce silos and builds a culture of continuous learning.
+
+---
+
+### **10. How do you mentor junior developers?**
+
+**Answer:**
+
+> I set short-term learning goals for them, review their code with detailed feedback, and involve them in design discussions gradually. I also suggest learning paths and assign meaningful tasks. I measure growth by their confidence, quality, and ability to contribute independently.
+
+---
+
+### **11. What’s your strategy for managing technical debt?**
+
+**Answer:**
+
+> I maintain a technical debt log in Jira. During sprint planning, I negotiate a balance between new features and refactoring work (typically 15–20%). I involve architects for larger decisions and prioritize tech debt based on impact and risk.
+
+---
+
+### **12. How do you contribute to release planning and estimation?**
+
+**Answer:**
+
+> I work with Product Owners to refine stories and define scope. I ensure devs give realistic estimates using planning poker. I account for capacity, buffer for unplanned work, and define milestones. I also provide delivery confidence metrics to management.
+
+---
+
+### **13. How do you handle urgent production issues during non-working hours?**
+
+**Answer:**
+
+> I follow an on-call rotation with clear escalation paths. For major incidents, I join the bridge, guide impact assessment, and coordinate with infra/app teams. I ensure comms with stakeholders and drive RCA next day. I also automate alerts via tools like Splunk or Prometheus.
+
+---
+
+### **14. How do you maintain alignment with product and business teams?**
+
+**Answer:**
+
+> I attend grooming and planning meetings, provide technical feasibility feedback early, and ensure transparency through Jira dashboards and sprint demos. I also join regular check-ins with product managers to sync on progress and unblock priorities.
+
+---
+
+### **15. What’s your leadership style?**
+
+**Answer:**
+
+> I follow a **situational leadership** style. I give autonomy to experienced engineers while providing hands-on support to junior members. I believe in leading by example, listening actively, and empowering the team to own their outcomes.
+
+---
+
+## 🧠 Bonus Situational/Scenario Questions
+
+| **Question**                                                           | **Tip**                                                              |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Tell me about a time when a release went wrong. How did you handle it? | Show calm response, quick rollback, and postmortem learning          |
+| How do you handle vague or changing requirements?                      | Talk about agile mindset, spikes, and close PO collaboration         |
+| Your top developer resigns suddenly — what next?                       | Describe KT, impact assessment, backup planning, and morale boosting |
+
+---
