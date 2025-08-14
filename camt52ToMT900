@@ -1,0 +1,69 @@
+import com.prowidesoftware.swift.model.mt.mt9xx.MT900;
+import com.prowidesoftware.swift.model.field.*;
+import com.prowidesoftware.swift.model.mx.MxCamt05400108;
+import com.prowidesoftware.swift.model.mx.dic.*;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class Camt54ToMT900 {
+
+    public static void main(String[] args) throws Exception {
+        // Load CAMT.054 XML from file
+        String xml = new String(Files.readAllBytes(new File("camt054.xml").toPath()));
+        MxCamt05400108 camt = MxCamt05400108.parse(xml);
+
+        // Loop through notifications and entries
+        for (AccountNotification15 notif : camt.getBkToCstmrDbtCdtNtfctn().getNtfctn()) {
+            String accountId = notif.getAcct().getId().getIBAN() != null ?
+                    notif.getAcct().getId().getIBAN() :
+                    notif.getAcct().getId().getOthr().getId();
+
+            for (ReportEntry10 entry : notif.getNtry()) {
+                if (CreditDebitCode.DBIT.equals(entry.getCdtDbtInd())) {
+                    // Build MT900
+                    MT900 mt900 = new MT900();
+
+                    // Field 20: Transaction reference (entry reference or account service ref)
+                    String ref = entry.getNtryRef() != null ?
+                            entry.getNtryRef() :
+                            entry.getAcctSvcrRef();
+                    mt900.addField(new Field20(ref));
+
+                    // Field 25: Account Identification
+                    mt900.addField(new Field25(accountId));
+
+                    // Field 32A: Date, Currency, Amount
+                    Date bookingDate = entry.getBookgDt().getDt() != null
+                            ? entry.getBookgDt().getDt().toGregorianCalendar().getTime()
+                            : new Date();
+                    String dateStr = new SimpleDateFormat("yyMMdd").format(bookingDate);
+                    String currency = entry.getAmt().getCcy();
+                    String amount = entry.getAmt().getValue().toPlainString();
+                    mt900.addField(new Field32A(dateStr, currency, amount));
+
+                    // Field 52A: Ordering Institution (if available)
+                    if (entry.getNtryDtls() != null &&
+                        !entry.getNtryDtls().isEmpty() &&
+                        entry.getNtryDtls().get(0).getTxDtls() != null &&
+                        !entry.getNtryDtls().get(0).getTxDtls().isEmpty()) {
+
+                        TransactionParties3 parties = entry.getNtryDtls().get(0)
+                                .getTxDtls().get(0).getRltdPties();
+
+                        if (parties != null && parties.getDbtrAgt() != null &&
+                            parties.getDbtrAgt().getFinInstnId() != null &&
+                            parties.getDbtrAgt().getFinInstnId().getBICFI() != null) {
+                            mt900.addField(new Field52A(parties.getDbtrAgt().getFinInstnId().getBICFI()));
+                        }
+                    }
+
+                    // Output the SWIFT FIN message
+                    System.out.println(mt900.message());
+                }
+            }
+        }
+    }
+}
