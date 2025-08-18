@@ -1,0 +1,218 @@
+package demo.camt054.to.mt9xx;
+
+import com.prowidesoftware.swift.model.SwiftMessage;
+import com.prowidesoftware.swift.model.field.Field20;
+import com.prowidesoftware.swift.model.field.Field21;
+import com.prowidesoftware.swift.model.field.Field25;
+import com.prowidesoftware.swift.model.field.Field32A;
+import com.prowidesoftware.swift.model.mt.mt9xx.MT900;
+import com.prowidesoftware.swift.model.mt.mt9xx.MT910;
+import com.prowidesoftware.swift.model.mx.MxNode;
+import com.prowidesoftware.swift.model.mx.MxParser;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+/**
+ * camt.054 -> MT900/MT910 converter using Prowide.
+ *
+ * Usage:
+ *   java -jar camt054-to-mt9xx.jar <camt054.xml> <senderBIC> <receiverBIC>
+ *
+ * Example:
+ *   java -jar camt054-to-mt9xx.jar ./samples/camt054.xml BANKBEBBAXXX BANKDEFFXXXX
+ */
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+        if (args.length < 3) {
+            System.err.println("Usage: java -jar camt054-to-mt9xx.jar <camt054.xml> <senderBIC> <receiverBIC>");
+            System.exit(1);
+        }
+
+        Path camtPath = Paths.get(args[0]);
+        String senderBic = args[1];
+        String receiverBic = args[2];
+
+        String xml = Files.readString(camtPath, StandardCharsets.UTF_8);
+        MxNode root = new MxParser(xml).parse();
+        if (root == null) {
+            throw new IllegalArgumentException("Cannot parse input XML as ISO 20022.");
+        }
+
+        Path outDir = Paths.get("out");
+        Files.createDirectories(outDir);
+
+        // Process each Notification (Ntfctn). Account lives at Ntfctn level; entries under Ntry.
+        List<MxNode> notifications = findNodes(root, "/BkToCstmrDbtCdtNtfctn/Ntfctn");
+        int counter = 0;
+        for (MxNode ntf : notifications) {
+            String account = resolveAccount(ntf); // :25:
+            if (account == null || account.isBlank()) {
+                // If account isn’t found at Ntfctn level, try at document header (rare)
+                account = text(root, "/BkToCstmrDbtCdtNtfctn/Ntfctn/Acct/Id/Othr/Id");
+            }
+
+            List<MxNode> entries = findNodes(ntf, "./Ntry");
+            for (MxNode entry : entries) {
+                String ind = text(entry, "./CdtDbtInd"); // DBIT or CRDT
+                String ccy = attr(entry, "./Amt", "Ccy");
+                String amt = text(entry, "./Amt");
+                String valDateIso = text(entry, "./ValDt/Dt");
+                String ntryRef = text(entry, "./NtryRef");            // :20:
+                String acctSvcrRef = text(entry, "./AcctSvcrRef");    // :21: (optional)
+
+                // value date fallback: sometimes under BookgDt/Dt or ValDt/DtTm
+                if (valDateIso == null) {
+                    valDateIso = text(entry, "./ValDt/DtTm");
+                    if (valDateIso != null && valDateIso.length() >= 10) {
+                        valDateIso = valDateIso.substring(0, 10);
+                    } else if (valDateIso == null) {
+                        valDateIso = text(entry, "./BookgDt/Dt");
+                    }
+                }
+
+                // sanity & fallbacks
+                if (ccy == null) ccy = "XXX";
+                if (amt == null) amt = "0";
+                if (valDateIso == null) valDateIso = LocalDate.now().toString();
+                if (ntryRef == null || ntryRef.isBlank()) ntryRef = "REF-" + UUID.randomUUID();
+
+                String dateYYMMDD = yymmdd(valDateIso);
+                String mtAmount = toMtAmount(amt); // decimal comma
+
+                SwiftMessage mt;
+                if ("DBIT".equalsIgnoreCase(ind)) {
+                    mt = buildMT900(senderBic, receiverBic, account, ntryRef, acctSvcrRef, dateYYMMDD, ccy, mtAmount);
+                } else if ("CRDT".equalsIgnoreCase(ind)) {
+                    mt = buildMT910(senderBic, receiverBic, account, ntryRef, acctSvcrRef, dateYYMMDD, ccy, mtAmount);
+                } else {
+                    // Unknown indicator; skip
+                    continue;
+                }
+
+                String fin = mt.toString(); // FIN text
+                System.out.println("---- MT message ----");
+                System.out.println(fin);
+
+                String baseName = ( "DBIT".equalsIgnoreCase(ind) ? "MT900" : "MT910" )
+                        + "_" + safeFile(ntryRef) + "_" + (++counter) + ".fin";
+                Path out = outDir.resolve(baseName);
+                Files.writeString(out, fin, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            }
+        }
+
+        System.out.println("Done. Messages written to: " + outDir.toAbsolutePath());
+    }
+
+    /* --------------------- Builders ---------------------- */
+
+    private static SwiftMessage buildMT900(String sender, String receiver,
+                                           String account, String trn20, String relref21,
+                                           String yymmdd, String ccy, String amount) {
+        MT900 mt = new MT900();
+        mt.setSender(sender);
+        mt.setReceiver(receiver);
+
+        // :20: Transaction Reference
+        mt.addField(new Field20(trn20));
+
+        // :21: Related Reference (optional)
+        if (notBlank(relref21)) {
+            mt.addField(new Field21(relref21));
+        }
+
+        // :25: Account Identification
+        if (notBlank(account)) {
+            mt.addField(new Field25(account));
+        }
+
+        // :32A: Value Date, Currency, Amount
+        mt.addField(new Field32A(yymmdd, ccy, amount));
+
+        return mt.getSwiftMessage();
+    }
+
+    private static SwiftMessage buildMT910(String sender, String receiver,
+                                           String account, String trn20, String relref21,
+                                           String yymmdd, String ccy, String amount) {
+        MT910 mt = new MT910();
+        mt.setSender(sender);
+        mt.setReceiver(receiver);
+
+        mt.addField(new Field20(trn20));
+        if (notBlank(relref21)) {
+            mt.addField(new Field21(relref21));
+        }
+        if (notBlank(account)) {
+            mt.addField(new Field25(account));
+        }
+        mt.addField(new Field32A(yymmdd, ccy, amount));
+
+        return mt.getSwiftMessage();
+    }
+
+    /* --------------------- Helpers ----------------------- */
+
+    /** Prefer IBAN, else Other/Id under Acct/Id */
+    private static String resolveAccount(MxNode ntf) {
+        String iban = text(ntf, "./Acct/Id/IBAN");
+        if (notBlank(iban)) return iban;
+        String oth = text(ntf, "./Acct/Id/Othr/Id");
+        if (notBlank(oth)) return oth;
+        // Some banks put BBAN or other forms; expand here if you need
+        return null;
+    }
+
+    private static List<MxNode> findNodes(MxNode base, String path) {
+        List<MxNode> r = base.findNodes(path);
+        return r == null ? Collections.emptyList() : r;
+    }
+
+    private static String text(MxNode base, String path) {
+        try {
+            MxNode n = base.findFirst(path);
+            return n != null ? n.getValue() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String attr(MxNode base, String path, String attrName) {
+        try {
+            MxNode n = base.findFirst(path);
+            return n != null ? n.getAttribute(attrName) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Convert ISO date yyyy-MM-dd to yymmdd for :32A: */
+    private static String yymmdd(String iso) {
+        LocalDate d = LocalDate.parse(iso.substring(0, 10));
+        return d.format(DateTimeFormatter.ofPattern("yyMMdd"));
+    }
+
+    /** Convert 1234.56 -> 1234,56 (MT uses comma as decimal separator) */
+    private static String toMtAmount(String xmlAmount) {
+        if (xmlAmount == null) return "0";
+        // normalize scientific or stray spaces
+        BigDecimal bd = new BigDecimal(xmlAmount.trim());
+        // strip trailing zeros to avoid ",00" vs ",0" discrepancies—MT allows variable decimals
+        String s = bd.stripTrailingZeros().toPlainString();
+        return s.replace('.', ',');
+    }
+
+    private static boolean notBlank(String s) {
+        return s != null && !s.trim().isEmpty();
+    }
+
+    private static String safeFile(String s) {
+        return s.replaceAll("[^A-Za-z0-9._-]", "_");
+    }
+}
