@@ -27,6 +27,46 @@ class MyServiceTest {
 }
 //---------------------
   
+@TestConfiguration
+public class MockMongoTemplateConfig {
+
+    @Bean
+    @Primary
+    public MongoTemplate mongoTemplate() throws IOException {
+        MongoTemplate mongoTemplate = Mockito.mock(MongoTemplate.class);
+
+        // Load JSON data into list
+        ObjectMapper mapper = new ObjectMapper();
+        List<User> mockUsers = Arrays.asList(
+            mapper.readValue(
+                new ClassPathResource("data/users.json").getFile(),
+                User[].class
+            )
+        );
+
+        // Stub find()
+        Mockito.when(mongoTemplate.find(Mockito.any(Query.class), Mockito.eq(User.class)))
+               .thenReturn(mockUsers);
+
+        // Stub findOne()
+        Mockito.when(mongoTemplate.findOne(Mockito.any(Query.class), Mockito.eq(User.class)))
+               .thenAnswer(invocation -> 
+                   mockUsers.stream().findFirst().orElse(null)
+               );
+
+        // Stub findById()
+        Mockito.when(mongoTemplate.findById(Mockito.anyString(), Mockito.eq(User.class)))
+               .thenAnswer(invocation -> {
+                   String id = invocation.getArgument(0, String.class);
+                   return mockUsers.stream()
+                                   .filter(u -> u.getId().equals(id))
+                                   .findFirst()
+                                   .orElse(null);
+               });
+
+        return mongoTemplate;
+    }
+}
 
 
   
