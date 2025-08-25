@@ -1,0 +1,23 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.Document;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.mongodb.core.MongoTemplate;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+public class MongoTestUtils {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    public static void loadJsonIntoCollection(MongoTemplate mongoTemplate,
+                                              String resourcePath,
+                                              String collectionName) throws IOException {
+        List<Document> docs = Arrays.asList(
+            mapper.readValue(new ClassPathResource(resourcePath).getFile(), Document[].class)
+        );
+        mongoTemplate.dropCollection(collectionName); // clean slate
+        mongoTemplate.insert(docs, collectionName);
+    }
+}
