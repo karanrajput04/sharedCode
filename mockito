@@ -1,0 +1,32 @@
+ObjectMapper mapper = new ObjectMapper();
+User mockUser = mapper.readValue(
+    new ClassPathResource("data/user.json").getFile(),
+    User.class
+);
+
+when(mongoTemplate.findById("1", User.class)).thenReturn(mockUser);
+#-------------------
+
+  @TestConfiguration
+public class MockMongoConfig {
+
+    @Bean
+    @Primary
+    public MongoTemplate mongoTemplate() {
+        return Mockito.mock(MongoTemplate.class);
+    }
+}
+//----------------------
+  @SpringBootTest
+@Import(MockMongoConfig.class)
+class MyServiceTest {
+    @Autowired
+    MongoTemplate mongoTemplate;  // this is the mocked one
+
+    // same as before
+}
+//---------------------
+  
+
+
+  
