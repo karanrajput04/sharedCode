@@ -70,3 +70,113 @@ public class MockMongoTemplateConfig {
 
 
   
+----------------------------------------------------------------------------
+
+@TestConfiguration
+public class MockMongoTemplateConfig {
+
+    @Bean
+    @Primary
+    public MongoTemplate mongoTemplate() throws IOException {
+        MongoTemplate mongoTemplate = Mockito.mock(MongoTemplate.class);
+
+        // Load all test documents into memory
+        ObjectMapper mapper = new ObjectMapper();
+        List<Document> transactions = Arrays.asList(
+            mapper.readValue(
+                new ClassPathResource("data/transactions.json").getFile(),
+                Document[].class
+            )
+        );
+
+        // find(Query, Document.class)
+        Mockito.when(mongoTemplate.find(Mockito.any(Query.class), Mockito.eq(Document.class)))
+               .thenAnswer(invocation -> {
+                   Query query = invocation.getArgument(0, Query.class);
+                   return transactions.stream()
+                           .filter(doc -> matchesQuery(doc, query))
+                           .collect(Collectors.toList());
+               });
+
+        // findOne(Query, Document.class)
+        Mockito.when(mongoTemplate.findOne(Mockito.any(Query.class), Mockito.eq(Document.class)))
+               .thenAnswer(invocation -> {
+                   Query query = invocation.getArgument(0, Query.class);
+                   return transactions.stream()
+                           .filter(doc -> matchesQuery(doc, query))
+                           .findFirst()
+                           .orElse(null);
+               });
+
+        return mongoTemplate;
+    }
+
+    /** Enhanced query matcher */
+    private boolean matchesQuery(Document doc, Query query) {
+        Document q = query.getQueryObject();
+
+        for (Map.Entry<String, Object> entry : q.entrySet()) {
+            String field = entry.getKey();
+            Object condition = entry.getValue();
+            Object actual = doc.get(field);
+
+            if (condition instanceof Document) {
+                // Operator-based condition
+                Document condDoc = (Document) condition;
+                for (Map.Entry<String, Object> cond : condDoc.entrySet()) {
+                    String op = cond.getKey();
+                    Object expected = cond.getValue();
+
+                    switch (op) {
+                        case "$gt":
+                            if (!(compare(actual, expected) > 0)) return false;
+                            break;
+                        case "$lt":
+                            if (!(compare(actual, expected) < 0)) return false;
+                            break;
+                        case "$gte":
+                            if (!(compare(actual, expected) >= 0)) return false;
+                            break;
+                        case "$lte":
+                            if (!(compare(actual, expected) <= 0)) return false;
+                            break;
+                        case "$in":
+                            if (!(expected instanceof Collection) ||
+                                !((Collection<?>) expected).contains(actual)) {
+                                return false;
+                            }
+                            break;
+                        case "$regex":
+                            if (!(expected instanceof String)) return false;
+                            String pattern = (String) expected;
+                            if (actual == null || !actual.toString().matches(pattern)) {
+                                return false;
+                            }
+                            break;
+                        default:
+                            throw new UnsupportedOperationException("Operator not supported: " + op);
+                    }
+                }
+            } else {
+                // Simple equality
+                if (!Objects.equals(condition, actual)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Helper for number/string comparison */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private int compare(Object a, Object b) {
+        if (a == null || b == null) return -1;
+        if (a instanceof Number && b instanceof Number) {
+            return Double.compare(((Number) a).doubleValue(), ((Number) b).doubleValue());
+        }
+        if (a instanceof Comparable && b instanceof Comparable) {
+            return ((Comparable) a).compareTo(b);
+        }
+        return a.toString().compareTo(b.toString());
+    }
+}
