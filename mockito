@@ -180,3 +180,15 @@ public class MockMongoTemplateConfig {
         return a.toString().compareTo(b.toString());
     }
 }
+
+
+-------------------------------------------------------
+
+
+  MongoMappingContext context = new MongoMappingContext();
+        MappingMongoConverter converter = new MappingMongoConverter(NoOpDbRefResolver.INSTANCE, context);
+        converter.afterPropertiesSet();
+
+        // Create a spy so you can override methods
+        MongoTemplate realTemplate = new MongoTemplate(Mockito.mock(MongoDatabaseFactory.class), converter);
+        MongoTemplate spyTemplate = Mockito.spy(realTemplate);
