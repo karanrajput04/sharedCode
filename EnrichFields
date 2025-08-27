@@ -1,0 +1,76 @@
+{
+  "mode": "enrichment",
+  "target": "MT019",
+  "blocks": [
+    {
+      "block": "3",
+      "fields": [
+        {
+          "tag": "113",
+          "action": "addIfMissing",       // only adds if not present
+          "components": [
+            { "source": "constant", "value": "N" }
+          ]
+        },
+        {
+          "tag": "108",
+          "action": "override",           // replaces existing if found
+          "components": [
+            { "source": "jsonKey", "key": "transactionRef" }
+          ]
+        },
+        {
+          "tag": "119",
+          "action": "append",             // appends additional occurrence
+          "components": [
+            { "source": "constant", "value": "MY-EXTRA-FIELD" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+-----------------------------------------------------
+public SwiftMessage enrichMT(SwiftMessage existingMessage, EnrichmentConfig config, Map<String, Object> inputJson) {
+    for (BlockConfig blockConfig : config.getBlocks()) {
+        SwiftBlock block = existingMessage.getBlock(blockConfig.getBlock());
+        if (block == null) {
+            // create missing block
+            block = new SwiftBlockUser(blockConfig.getBlock());
+            existingMessage.addBlock(block);
+        }
+
+        for (FieldConfig fieldCfg : blockConfig.getFields()) {
+            String value = buildValueFromComponents(fieldCfg.getComponents(), inputJson);
+
+            Tag existingTag = block.getTagByName(fieldCfg.getTag());
+
+            switch (fieldCfg.getAction()) {
+                case "addIfMissing":
+                    if (existingTag == null) {
+                        block.append(new Tag(fieldCfg.getTag(), value));
+                    }
+                    break;
+
+                case "override":
+                    if (existingTag != null) {
+                        existingTag.setValue(value);
+                    } else {
+                        block.append(new Tag(fieldCfg.getTag(), value));
+                    }
+                    break;
+
+                case "append":
+                    block.append(new Tag(fieldCfg.getTag(), value));
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unknown action: " + fieldCfg.getAction());
+            }
+        }
+    }
+    return existingMessage;
+}
+
+
+
