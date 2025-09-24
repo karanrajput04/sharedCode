@@ -1,0 +1,47 @@
+import org.apache.commons.text.StringEscapeUtils;
+import org.w3c.dom.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+
+public class EscapeXmlValues {
+    public static void main(String[] args) throws Exception {
+        // Load XML file
+        File inputFile = new File("input.xml");
+
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(inputFile);
+
+        // Normalize XML
+        doc.getDocumentElement().normalize();
+
+        // Recursively escape text nodes only
+        escapeTextNodes(doc.getDocumentElement());
+
+        // Write back to file / console
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(System.out); // or new File("output.xml")
+        transformer.transform(source, result);
+    }
+
+    private static void escapeTextNodes(Node node) {
+        if (node.getNodeType() == Node.TEXT_NODE) {
+            String original = node.getNodeValue();
+            String escaped = StringEscapeUtils.escapeXml11(original);
+            node.setNodeValue(escaped);
+        }
+
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            escapeTextNodes(children.item(i));
+        }
+    }
+}
