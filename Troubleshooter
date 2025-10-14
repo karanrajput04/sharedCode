@@ -1,0 +1,130 @@
+import com.mongodb.client.*;
+import org.bson.Document;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+import java.io.*;
+import java.util.*;
+import java.util.regex.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class MongoTroubleshooter {
+
+    private final MongoClient mongoClient;
+    private final MongoDatabase database;
+    private final Map<String, MessageCriteria> msgCriteriaMap;
+
+    public MongoTroubleshooter(String connectionString, String dbName, String configPath) throws Exception {
+        this.mongoClient = MongoClients.create(connectionString);
+        this.database = mongoClient.getDatabase(dbName);
+        this.msgCriteriaMap = loadCriteria(configPath);
+    }
+
+    private Map<String, MessageCriteria> loadCriteria(String path) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Map<String, Object>> config = mapper.readValue(new File(path), Map.class);
+        Map<String, MessageCriteria> result = new HashMap<>();
+        for (String msgType : config.keySet()) {
+            Map<String, Object> cfg = config.get(msgType);
+            result.put(msgType, new MessageCriteria(
+                    (String) cfg.get("collection"),
+                    (Map<String, String>) cfg.get("criteria"))
+            );
+        }
+        return result;
+    }
+
+    public void troubleshoot(String partnerRequest) throws Exception {
+        // Step 1: Extract header fields
+        Map<String, String> header = extractHeaderFields(partnerRequest);
+        String msgType = header.get("MsgType");
+
+        // Step 2: Extract XML fields
+        String xmlPart = partnerRequest.substring(partnerRequest.indexOf("<Transaction>"));
+        Map<String, String> xmlFields = extractXmlFields(xmlPart, Arrays.asList("Sender", "InstrId", "RECEIVER"));
+
+        // Merge for querying
+        Map<String, String> combined = new HashMap<>(header);
+        combined.putAll(xmlFields);
+
+        // Step 3: Get criteria for MsgType
+        MessageCriteria criteria = msgCriteriaMap.get(msgType);
+        if (criteria == null) {
+            System.out.println("❌ Unsupported MsgType: " + msgType);
+            return;
+        }
+
+        MongoCollection<Document> collection = database.getCollection(criteria.collection);
+        Document query = new Document();
+        for (Map.Entry<String, String> e : criteria.criteria.entrySet()) {
+            query.append(e.getValue(), combined.get(e.getKey()));
+        }
+
+        // Step 4: Query DB
+        Document result = collection.find(query).first();
+        if (result != null) {
+            System.out.println("✅ Record found: " + result.toJson());
+        } else {
+            System.out.println("⚠️ No record found. Starting field-by-field troubleshooting...");
+            troubleshootFields(collection, criteria, combined);
+        }
+    }
+
+    private void troubleshootFields(MongoCollection<Document> collection, MessageCriteria criteria, Map<String, String> values) {
+        for (Map.Entry<String, String> entry : criteria.criteria.entrySet()) {
+            String fieldName = entry.getValue();
+            String value = values.get(entry.getKey());
+            if (value == null) {
+                System.out.println("❌ Missing value for " + entry.getKey());
+                continue;
+            }
+            Document query = new Document(fieldName, value);
+            Document found = collection.find(query).first();
+            if (found != null)
+                System.out.println("✅ Field matched: " + entry.getKey() + "=" + value);
+            else
+                System.out.println("❌ No record found for field: " + entry.getKey() + "=" + value);
+        }
+    }
+
+    private Map<String, String> extractHeaderFields(String input) {
+        Map<String, String> map = new HashMap<>();
+        Matcher m = Pattern.compile("(?m)^(\\w+):(.*)$").matcher(input.split("\\[HEAD-END\\]")[0]);
+        while (m.find()) {
+            map.put(m.group(1).trim(), m.group(2).trim());
+        }
+        return map;
+    }
+
+    private Map<String, String> extractXmlFields(String xml, List<String> tags) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document doc = db.parse(new ByteArrayInputStream(xml.getBytes()));
+        for (String tag : tags) {
+            NodeList list = doc.getElementsByTagName(tag);
+            if (list.getLength() > 0) {
+                map.put(tag, list.item(0).getTextContent());
+            }
+        }
+        return map;
+    }
+
+    record MessageCriteria(String collection, Map<String, String> criteria) {}
+
+    public static void main(String[] args) throws Exception {
+        String input = """
+                [HEAD-START]
+                UETR:90eea597-9c1b-4697-96a3-abc1508d0aac
+                TXNID:QWERTYU123
+                MsgType:PACS008
+                [HEAD-END]
+                <Transaction>
+                    <Sender>SenderBIC</Sender>
+                    <RECEIVER>RECEIVERBIC</RECEIVER>
+                    <InstrId>InstrId123</InstrId>
+                </Transaction>
+                """;
+
+        MongoTroubleshooter tool = new MongoTroubleshooter("mongodb://localhost:27017", "swiftDB", "criteria.json");
+        tool.troubleshoot(input);
+    }
+}
