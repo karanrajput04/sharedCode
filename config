@@ -1,0 +1,34 @@
+{
+  "PACS008": {
+    "collection": "pacs008_transactions",
+    "criteria": {
+      "UETR": "uetr",
+      "SenderBIC": "senderBic",
+      "InstrId": "instructionId"
+    }
+  },
+  "PACS004": {
+    "collection": "pacs004_transactions",
+    "criteria": {
+      "UETR": "uetr",
+      "ReceiverBIC": "receiverBic",
+      "SettlementId": "settlementId"
+    }
+  },
+  "PACS002": {
+    "collection": "pacs002_responses",
+    "criteria": {
+      "UETR": "uetr",
+      "OriginalInstrId": "originalInstrId",
+      "TxnStatus": "transactionStatus"
+    }
+  },
+  "CAMT056": {
+    "collection": "camt056_requests",
+    "criteria": {
+      "UETR": "uetr",
+      "CancellationId": "cancellationId",
+      "SenderBIC": "senderBic"
+    }
+  }
+}
