@@ -1,0 +1,64 @@
+import java.io.*;
+import java.nio.file.*;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class ReplaceUETRs {
+
+    // Folder path containing your text files
+    private static final String FOLDER_PATH = "path/to/your/folder";
+
+    // Regex to match UETR (UUID format)
+    private static final Pattern UETR_PATTERN = Pattern.compile(
+            "\\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\b"
+    );
+
+    public static void main(String[] args) {
+        try {
+            processFolder(FOLDER_PATH);
+            System.out.println("✅ All files updated successfully!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void processFolder(String folderPath) throws IOException {
+        Files.list(Paths.get(folderPath))
+                .filter(path -> path.toString().toLowerCase().endsWith(".txt"))
+                .forEach(path -> {
+                    try {
+                        System.out.println("Processing: " + path);
+                        replaceUETRInFile(path);
+                    } catch (IOException e) {
+                        System.err.println("Error processing file: " + path);
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+    private static void replaceUETRInFile(Path filePath) throws IOException {
+        // Read all lines from the file
+        StringBuilder updatedContent = new StringBuilder();
+        try (BufferedReader reader = Files.newBufferedReader(filePath)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = UETR_PATTERN.matcher(line);
+                StringBuffer replacedLine = new StringBuffer();
+
+                // Replace all UETRs with new UUIDs
+                while (matcher.find()) {
+                    String newUETR = UUID.randomUUID().toString();
+                    matcher.appendReplacement(replacedLine, newUETR);
+                }
+                matcher.appendTail(replacedLine);
+                updatedContent.append(replacedLine).append(System.lineSeparator());
+            }
+        }
+
+        // Write updated content back to file
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            writer.write(updatedContent.toString());
+        }
+    }
+}
