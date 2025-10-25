@@ -128,3 +128,77 @@ public class MongoTroubleshooter {
         tool.troubleshoot(input);
     }
 }
+
+
+
+
+
+
+private void troubleshootFields(MongoCollection<Document> collection, MessageCriteria criteria, Map<String, String> values) {
+    // Separate UETR (mandatory) and other fields
+    String mandatoryKey = "UETR";
+    String mandatoryDbField = criteria.criteria.get(mandatoryKey);
+    String mandatoryValue = values.get(mandatoryKey);
+
+    if (mandatoryValue == null) {
+        System.out.println("❌ Missing mandatory field UETR in request.");
+        return;
+    }
+
+    // Collect optional fields
+    Map<String, String> optionalFields = new LinkedHashMap<>();
+    for (Map.Entry<String, String> entry : criteria.criteria.entrySet()) {
+        if (!entry.getKey().equalsIgnoreCase(mandatoryKey)) {
+            String val = values.get(entry.getKey());
+            if (val != null) {
+                optionalFields.put(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    System.out.println("🧩 Starting combination-based troubleshooting...");
+    List<List<String>> combinations = generateCombinations(new ArrayList<>(optionalFields.keySet()));
+
+    boolean matchFound = false;
+    for (List<String> combo : combinations) {
+        Document query = new Document(mandatoryDbField, mandatoryValue);
+        for (String key : combo) {
+            query.append(optionalFields.get(key), values.get(key));
+        }
+
+        Document found = collection.find(query).first();
+        String comboStr = combo.isEmpty() ? "[UETR]" : "[UETR + " + String.join(" + ", combo) + "]";
+        if (found != null) {
+            System.out.println("✅ Match found for combination: " + comboStr);
+            matchFound = true;
+            break; // Stop at first successful combination
+        } else {
+            System.out.println("❌ No record for combination: " + comboStr);
+        }
+    }
+
+    if (!matchFound) {
+        System.out.println("⚠️ No record found for any combination of available fields.");
+    }
+}
+
+/**
+ * Generate all non-empty combinations of a list of optional field keys.
+ */
+private List<List<String>> generateCombinations(List<String> fields) {
+    List<List<String>> result = new ArrayList<>();
+    int n = fields.size();
+    for (int mask = 0; mask < (1 << n); mask++) {
+        List<String> combo = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            if ((mask & (1 << i)) != 0) {
+                combo.add(fields.get(i));
+            }
+        }
+        result.add(combo);
+    }
+
+    // Sort by ascending combination size so smaller combos are tried first
+    result.sort(Comparator.comparingInt(List::size));
+    return result;
+}
