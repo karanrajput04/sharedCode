@@ -1,0 +1,21 @@
+package com.example.mqsim.model;
+
+import java.time.Instant;
+import java.util.List;
+
+public class QueueEvent {
+    public enum Type { DEPTH_UPDATE, METADATA, MESSAGE_DUMP, STATUS_UPDATE, HISTORY_UPDATE }
+
+    private Type type;
+    private String queueName;
+    private int depth;
+    private QueueMetadata metadata;
+    private QueueStatus status;
+    private List<Message> messages;
+    private Instant timestamp;
+
+    public QueueEvent() {}
+
+    // getters + setters omitted for brevity (generate them)
+    // Use lombok if preferred
+}
