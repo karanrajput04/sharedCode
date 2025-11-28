@@ -1,0 +1,41 @@
+:root {
+  --bg: #ffffff;
+  --text: #222;
+  --card: #f6f6f6;
+  --primary: #2d8cff;
+}
+
+.dark {
+  --bg: #0f1720;
+  --text: #e6eef8;
+  --card: #0b1220;
+  --primary: #4aa3ff;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+/* header, controls, etc. use card background */
+header, .section, .info, .chart-section {
+  background: var(--card);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+/* small danger button */
+button.danger {
+  background: #e04b4b;
+}
