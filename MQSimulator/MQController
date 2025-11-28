@@ -1,0 +1,63 @@
+package com.example.mqsim.controller;
+
+import com.example.mqsim.model.QueueMetadata;
+import com.example.mqsim.model.QueueStatus;
+import com.example.mqsim.service.QueueManagerService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+@Controller
+public class MQController {
+
+    private final QueueManagerService manager;
+
+    public MQController(QueueManagerService manager) {
+        this.manager = manager;
+    }
+
+    @GetMapping("/")
+    public String dashboard(@RequestParam(name="queue", required=false, defaultValue="default") String queue, Model model) {
+        model.addAttribute("queues", manager.listQueues());
+        model.addAttribute("selectedQueue", queue);
+        return "dashboard";
+    }
+
+    @PostMapping("/createQueue")
+    public String createQueue(@RequestParam String name,
+                              @RequestParam(defaultValue="FIFO") String type,
+                              @RequestParam(defaultValue="200") int capacity) {
+        manager.createQueue(name, type, capacity);
+        return "redirect:/?queue=" + name;
+    }
+
+    @PostMapping("/enqueue")
+    public String enqueue(@RequestParam String queue, @RequestParam String payload) {
+        manager.enqueue(queue, payload);
+        return "redirect:/?queue=" + queue;
+    }
+
+    @PostMapping("/dequeue")
+    public String dequeue(@RequestParam String queue) {
+        manager.dequeue(queue);
+        return "redirect:/?queue=" + queue;
+    }
+
+    @PostMapping("/clear")
+    public String clear(@RequestParam String queue) {
+        manager.clear(queue);
+        return "redirect:/?queue=" + queue;
+    }
+
+    @PostMapping("/status")
+    public String status(@RequestParam String queue, @RequestParam QueueStatus status) {
+        manager.setStatus(queue, status);
+        return "redirect:/?queue=" + queue;
+    }
+
+    @PostMapping("/dump")
+    public String dump(@RequestParam String queue) {
+        manager.broadcastDump(queue);
+        return "redirect:/?queue=" + queue;
+    }
+}
