@@ -1,0 +1,80 @@
+package com.example.mqsim.service;
+
+import com.example.mqsim.model.Message;
+import com.example.mqsim.model.QueueMetadata;
+import com.example.mqsim.model.QueueStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+
+public class MQSimulator {
+
+    private static final Logger log = LoggerFactory.getLogger(MQSimulator.class);
+
+    private final Deque<Message> queue = new LinkedList<>();
+    private QueueStatus status = QueueStatus.ACTIVE;
+    private final QueueMetadata metadata;
+
+    // Keep history of depth (timestamp, depth) for charting; store last N points
+    private final LinkedList<Integer> depthHistory = new LinkedList<>();
+    private final int historyLimit = 100;
+
+    public MQSimulator(String name, String type, int maxCapacity) {
+        this.metadata = new QueueMetadata(name, type, maxCapacity);
+        recordDepth(); // initial
+    }
+
+    public synchronized void enqueue(String payload) {
+        if (queue.size() >= metadata.getMaxCapacity()) {
+            throw new IllegalStateException("Queue is full");
+        }
+        Message m = new Message(payload);
+        queue.addLast(m);
+        log.info("Enqueued to {}: {}", metadata.getName(), m.getId());
+        recordDepth();
+    }
+
+    public synchronized Message dequeue() {
+        if (queue.isEmpty()) return null;
+        Message m = queue.removeFirst();
+        m.setInProcessing(true);
+        log.info("Dequeued from {}: {}", metadata.getName(), m.getId());
+        recordDepth();
+        return m;
+    }
+
+    public synchronized void clear() {
+        queue.clear();
+        recordDepth();
+    }
+
+    public synchronized int depth() {
+        return queue.size();
+    }
+
+    public List<Message> dumpMessages() {
+        return List.copyOf(queue);
+    }
+
+    public QueueMetadata getMetadata() {
+        return metadata;
+    }
+
+    public QueueStatus getStatus() { return status; }
+
+    public void setStatus(QueueStatus status) {
+        this.status = status;
+    }
+
+    private synchronized void recordDepth() {
+        if (depthHistory.size() >= historyLimit) depthHistory.removeFirst();
+        depthHistory.addLast(depth());
+    }
+
+    public synchronized List<Integer> getDepthHistory() {
+        return List.copyOf(depthHistory);
+    }
+}
