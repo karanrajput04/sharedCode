@@ -1,0 +1,115 @@
+package com.example.mqsim.service;
+
+import com.example.mqsim.model.QueueEvent;
+import com.example.mqsim.model.QueueMetadata;
+import com.example.mqsim.model.QueueStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Service
+public class QueueManagerService {
+
+    private final Map<String, MQSimulator> queues = new ConcurrentHashMap<>();
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public QueueManagerService(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+        // create a default queue
+        createQueue("default", "FIFO", 200);
+    }
+
+    public MQSimulator createQueue(String name, String type, int capacity) {
+        MQSimulator q = new MQSimulator(name, type, capacity);
+        queues.put(name, q);
+        broadcastMetadata(name);
+        return q;
+    }
+
+    public Optional<MQSimulator> getQueue(String name) {
+        return Optional.ofNullable(queues.get(name));
+    }
+
+    public List<QueueMetadata> listQueues() {
+        List<QueueMetadata> list = new ArrayList<>();
+        queues.values().forEach(q -> list.add(q.getMetadata()));
+        return list;
+    }
+
+    // operations with automatic broadcast
+    public void enqueue(String queueName, String payload) {
+        MQSimulator q = queues.get(queueName);
+        if (q == null) throw new IllegalArgumentException("No such queue");
+        q.enqueue(payload);
+        broadcastDepth(queueName);
+    }
+
+    public void dequeue(String queueName) {
+        MQSimulator q = queues.get(queueName);
+        if (q == null) throw new IllegalArgumentException("No such queue");
+        q.dequeue();
+        broadcastDepth(queueName);
+    }
+
+    public void clear(String queueName) {
+        MQSimulator q = queues.get(queueName);
+        if (q == null) throw new IllegalArgumentException("No such queue");
+        q.clear();
+        broadcastDepth(queueName);
+    }
+
+    public void setStatus(String queueName, QueueStatus status) {
+        MQSimulator q = queues.get(queueName);
+        if (q == null) throw new IllegalArgumentException("No such queue");
+        q.setStatus(status);
+        broadcastStatus(queueName);
+    }
+
+    public void broadcastDepth(String queueName) {
+        MQSimulator q = queues.get(queueName);
+        QueueEvent ev = new QueueEvent();
+        ev.setType(QueueEvent.Type.DEPTH_UPDATE);
+        ev.setQueueName(queueName);
+        ev.setDepth(q.depth());
+        ev.setTimestamp(java.time.Instant.now());
+        messagingTemplate.convertAndSend("/topic/queue/" + queueName + "/depth", ev);
+
+        // also broadcast history update
+        QueueEvent he = new QueueEvent();
+        he.setType(QueueEvent.Type.HISTORY_UPDATE);
+        he.setQueueName(queueName);
+        he.setTimestamp(java.time.Instant.now());
+        // it's simpler to send the history as list inside QueueEvent (not defined earlier) — we'll use a different subscription for history
+        // but to keep DTO small, we will send depth history separately:
+        messagingTemplate.convertAndSend("/topic/queue/" + queueName + "/history", q.getDepthHistory());
+    }
+
+    public void broadcastMetadata(String queueName) {
+        MQSimulator q = queues.get(queueName);
+        QueueEvent ev = new QueueEvent();
+        ev.setType(QueueEvent.Type.METADATA);
+        ev.setQueueName(queueName);
+        ev.setMetadata(q.getMetadata());
+        messagingTemplate.convertAndSend("/topic/queue/" + queueName + "/meta", ev);
+    }
+
+    public void broadcastStatus(String queueName) {
+        MQSimulator q = queues.get(queueName);
+        QueueEvent ev = new QueueEvent();
+        ev.setType(QueueEvent.Type.STATUS_UPDATE);
+        ev.setQueueName(queueName);
+        ev.setStatus(q.getStatus());
+        messagingTemplate.convertAndSend("/topic/queue/" + queueName + "/status", ev);
+    }
+
+    public void broadcastDump(String queueName) {
+        MQSimulator q = queues.get(queueName);
+        QueueEvent ev = new QueueEvent();
+        ev.setType(QueueEvent.Type.MESSAGE_DUMP);
+        ev.setQueueName(queueName);
+        ev.setMessages(q.dumpMessages());
+        messagingTemplate.convertAndSend("/topic/queue/" + queueName + "/dump", ev);
+    }
+}
