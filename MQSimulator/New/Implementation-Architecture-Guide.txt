@@ -1,0 +1,674 @@
+# Java MQ System - Implementation & Architecture Guide
+
+Comprehensive guide covering architecture, design patterns, and best practices.
+
+---
+
+## 🏗️ Architecture Overview
+
+### Layered Architecture
+
+```
+┌─────────────────────────────────────┐
+│   Presentation Layer (CLI)          │
+│   CommandLineInterface              │
+└────────────────┬────────────────────┘
+                 │
+┌────────────────▼────────────────────┐
+│   Service Layer                     │
+│   ├─ MQConnectionService            │
+│   ├─ QueueOperationService          │
+│   └─ MessageInspectionService       │
+└────────────────┬────────────────────┘
+                 │
+┌────────────────▼────────────────────┐
+│   Model Layer                       │
+│   ├─ ConnectionConfig               │
+│   ├─ MQMessage                      │
+│   └─ QueueInfo                      │
+└────────────────┬────────────────────┘
+                 │
+┌────────────────▼────────────────────┐
+│   Utility & Config Layer            │
+│   ├─ MQConfiguration                │
+│   ├─ ValidationUtil                 │
+│   └─ SSLUtil                        │
+└────────────────┬────────────────────┘
+                 │
+┌────────────────▼────────────────────┐
+│   IBM MQ Client Library             │
+│   MQQueueManager, MQQueue, etc.     │
+└─────────────────────────────────────┘
+```
+
+### Design Patterns Used
+
+1. **Service Layer Pattern**: Encapsulates business logic for MQ operations
+2. **Configuration Pattern**: Centralized configuration management
+3. **Exception Handling Pattern**: Custom exceptions for specific error scenarios
+4. **Singleton Pattern**: Single configuration instance for the application
+5. **Factory Pattern**: Dynamic creation of service instances
+6. **Facade Pattern**: CLI as facade for complex service interactions
+
+---
+
+## 📦 Package Structure & Responsibilities
+
+### com.messagequeue.exception
+
+**Responsibility**: Custom exception hierarchy for error handling
+
+**Classes**:
+- `MQConnectionException`: Connection-related errors
+- `QueueOperationException`: Queue operation errors
+- `ConfigurationException`: Configuration validation errors
+
+**Usage**:
+```java
+try {
+    connectionService.connect();
+} catch (MQConnectionException e) {
+    // Handle connection errors
+}
+```
+
+### com.messagequeue.model
+
+**Responsibility**: Data models representing MQ entities
+
+**Classes**:
+- `ConnectionConfig`: Encapsulates connection parameters
+- `MQMessage`: Represents a queue message
+- `QueueInfo`: Queue metadata and statistics
+
+**Design Considerations**:
+- Implement `Serializable` for potential persistence
+- Use immutable patterns where applicable
+- Include comprehensive `toString()` for debugging
+
+### com.messagequeue.config
+
+**Responsibility**: Configuration management and loading
+
+**Classes**:
+- `MQConfiguration`: Property file loading and access
+
+**Features**:
+- Property file precedence: Environment variables > File properties
+- Type-safe getters (String, Integer, Boolean)
+- Lazy loading and reloading support
+
+**Example**:
+```java
+MQConfiguration config = new MQConfiguration();
+String host = config.getString("mq.host", "localhost");
+int port = config.getInteger("mq.port", 1414);
+```
+
+### com.messagequeue.util
+
+**Responsibility**: Utility functions and helpers
+
+**Classes**:
+- `ValidationUtil`: Input and configuration validation
+- `SSLUtil`: SSL context creation and certificate handling
+
+**Validation Examples**:
+```java
+ValidationUtil.validateConnectionConfig(host, port, queueManager);
+ValidationUtil.validateMessageContent(content, maxLength);
+ValidationUtil.validateMessagePriority(priority);
+```
+
+### com.messagequeue.service
+
+**Responsibility**: Business logic for MQ operations
+
+#### MQConnectionService
+
+```java
+// Manages lifecycle of MQ connection
+MQConnectionService service = new MQConnectionService(config);
+service.connect();
+boolean connected = service.isConnected();
+service.disconnect();
+```
+
+**Key Methods**:
+- `connect()`: Establish connection to MQ
+- `disconnect()`: Close connection safely
+- `isConnected()`: Check connection status
+- `getConnectionInfo()`: Display connection details
+
+#### QueueOperationService
+
+```java
+// Performs operations on queue
+QueueOperationService service = new QueueOperationService(connectionService);
+int depth = service.getQueueDepth();
+QueueInfo info = service.getQueueDescription();
+String msgId = service.putMessage(content, priority);
+MQMessage msg = service.getMessage();
+service.clearQueue();
+```
+
+**Key Methods**:
+- Queue inquiries: `getQueueDepth()`, `getQueueDescription()`
+- Message operations: `putMessage()`, `getMessage()`, `getMessageStatuses()`
+- Queue maintenance: `clearQueue()`, `dumpQueueContents()`
+
+#### MessageInspectionService
+
+```java
+// Analyzes message content
+MessageInspectionService service = new MessageInspectionService();
+String details = service.inspectMessage(message);
+Map<String, String> headers = service.getMessageHeaders(message);
+```
+
+### com.messagequeue.cli
+
+**Responsibility**: User interface and command processing
+
+**Components**:
+- `CommandLineInterface`: Interactive menu and command handling
+- Input validation and user prompts
+- Operation result formatting and display
+
+---
+
+## 🔄 Data Flow Diagrams
+
+### Connection Establishment Flow
+
+```
+User Input (Connect)
+    ↓
+CLI.handleConnect()
+    ↓
+ConnectionConfig creation
+    ↓
+MQConnectionService.connect()
+    ↓
+Create MQ Environment (Hashtable)
+    ↓
+MQQueueManager initialization
+    ↓
+Queue access and opening
+    ↓
+Connection established ✓
+```
+
+### Message Put Operation Flow
+
+```
+User Input (Message + Priority)
+    ↓
+Input Validation
+    ├─ Content not empty
+    ├─ Content within size limits
+    └─ Priority 0-9
+    ↓
+QueueOperationService.putMessage()
+    ↓
+Create MQMessage
+    ↓
+Write content to message
+    ↓
+Put message to queue
+    ↓
+Return message ID ✓
+```
+
+### Message Get Operation Flow
+
+```
+User Request (Get Message)
+    ↓
+QueueOperationService.getMessage()
+    ↓
+MQQueue.get(message)
+    ↓
+Read message content
+    ↓
+Create MQMessage model
+    ↓
+MessageInspectionService.inspectMessage()
+    ↓
+Display formatted message ✓
+```
+
+---
+
+## 🛡️ Error Handling Strategy
+
+### Exception Hierarchy
+
+```
+Exception
+├── MQConnectionException
+│   ├── Timeout: Connection exceeded time limit
+│   ├── Authentication: Invalid credentials
+│   ├── SSL: Certificate/SSL issues
+│   └── Network: Unable to reach server
+│
+├── QueueOperationException
+│   ├── NotFound: Queue doesn't exist
+│   ├── Locked: Queue in use
+│   ├── MessageTooLarge: Exceeds max size
+│   └── NoMessageAvailable: Queue empty
+│
+└── ConfigurationException
+    ├── MissingRequired: Required property absent
+    ├── InvalidValue: Property value invalid
+    └── FileNotFound: Config file missing
+```
+
+### Recovery Strategies
+
+1. **Transient Failures**: Implement exponential backoff
+   ```java
+   for (int attempt = 0; attempt < maxRetries; attempt++) {
+       try {
+           connectionService.connect();
+           break;
+       } catch (MQConnectionException e) {
+           Thread.sleep(retryDelay * (long) Math.pow(2, attempt));
+       }
+   }
+   ```
+
+2. **Permanent Failures**: Graceful degradation
+   ```java
+   try {
+       connectionService.connect();
+   } catch (ConfigurationException e) {
+       logger.error("Invalid configuration. Please check settings.");
+       System.exit(1);
+   }
+   ```
+
+3. **Resource Cleanup**: Try-with-resources pattern
+   ```java
+   try {
+       connectionService.connect();
+       // Perform operations
+   } finally {
+       connectionService.disconnect();
+   }
+   ```
+
+---
+
+## 🔐 Security Considerations
+
+### 1. SSL/TLS Configuration
+
+```java
+// Enforce strong SSL settings
+SSLUtil.createSSLContext(
+    trustStorePath,      // Verify server
+    trustStorePassword,
+    keyStorePath,        // Authenticate client
+    keyStorePassword
+);
+
+// Recommended cipher suites
+String cipher = "TLS_RSA_WITH_AES_128_CBC_SHA256";
+```
+
+### 2. Credential Management
+
+**DO**:
+```java
+// Use environment variables
+String password = System.getenv("MQ_PASSWORD");
+
+// Use vaults/secret managers
+SecretManager secrets = new AWSSecretsManager();
+String password = secrets.getSecret("mq-password");
+```
+
+**DON'T**:
+```java
+// Never hardcode credentials
+String password = "hardcodedPassword";  // ✗ WRONG
+
+// Never commit credentials
+// mq.password=secret123  // In properties file ✗ WRONG
+```
+
+### 3. Audit Logging
+
+```java
+// Log all MQ operations
+logger.info("Connecting to MQ server: {}:{}", host, port);
+logger.info("Message sent: ID={}, Priority={}", messageId, priority);
+logger.warn("Connection failed: {}", errorMessage);
+```
+
+### 4. Access Control
+
+```java
+// Authenticate users
+if (!authenticateUser(username, password)) {
+    throw new SecurityException("Authentication failed");
+}
+
+// Authorize operations
+if (!authorizeQueueOperation(user, queueName, operation)) {
+    throw new SecurityException("Authorization denied");
+}
+```
+
+---
+
+## 📊 Performance Optimization
+
+### 1. Connection Pooling
+
+```java
+public class MQConnectionPool {
+    private Queue<MQQueueManager> pool;
+    private int poolSize;
+    
+    public MQQueueManager borrowConnection() {
+        // Get from pool or create new
+        return pool.poll();
+    }
+    
+    public void returnConnection(MQQueueManager qm) {
+        // Return to pool for reuse
+        pool.offer(qm);
+    }
+}
+```
+
+### 2. Batch Message Processing
+
+```java
+public List<MQMessage> getMessagesInBatch(int batchSize) {
+    List<MQMessage> batch = new ArrayList<>();
+    for (int i = 0; i < batchSize; i++) {
+        try {
+            batch.add(getMessage());
+        } catch (QueueOperationException e) {
+            break;  // No more messages
+        }
+    }
+    return batch;
+}
+```
+
+### 3. Asynchronous Processing
+
+```java
+ExecutorService executor = Executors.newFixedThreadPool(10);
+
+Future<String> result = executor.submit(() -> {
+    return queueService.putMessage(content, priority);
+});
+
+String messageId = result.get(30, TimeUnit.SECONDS);
+```
+
+### 4. Caching
+
+```java
+public class QueueInfoCache {
+    private QueueInfo cachedInfo;
+    private long cacheExpiry;
+    
+    public QueueInfo getQueueInfo() throws QueueOperationException {
+        if (isCacheValid()) {
+            return cachedInfo;
+        }
+        cachedInfo = queueService.getQueueDescription();
+        cacheExpiry = System.currentTimeMillis() + 60000; // 1 minute
+        return cachedInfo;
+    }
+}
+```
+
+---
+
+## 🧪 Testing Strategy
+
+### Unit Tests
+
+```java
+@Test
+public void testQueueDepthRetrieval() throws QueueOperationException {
+    QueueOperationService service = 
+        new QueueOperationService(mockConnectionService);
+    
+    int depth = service.getQueueDepth();
+    
+    assertEquals(expectedDepth, depth);
+}
+```
+
+### Integration Tests
+
+```java
+@Test
+public void testMessagePutAndGet() throws Exception {
+    connectionService.connect();
+    
+    String messageId = queueService.putMessage("Test message", 5);
+    MQMessage message = queueService.getMessage();
+    
+    assertEquals("Test message", message.getContent());
+    
+    connectionService.disconnect();
+}
+```
+
+### Mock Objects
+
+```java
+MQConnectionService mockService = mock(MQConnectionService.class);
+when(mockService.isConnected()).thenReturn(true);
+when(mockService.getQueue()).thenReturn(mockQueue);
+```
+
+---
+
+## 📈 Monitoring & Observability
+
+### Key Metrics
+
+1. **Queue Depth**: Number of messages in queue
+2. **Message Throughput**: Messages per second
+3. **Connection Latency**: Time to establish connection
+4. **Error Rate**: Failed operations percentage
+5. **Resource Usage**: Memory, CPU, network
+
+### Logging Levels
+
+```
+DEBUG:   Detailed diagnostic information
+INFO:    Important operational events
+WARN:    Potentially harmful situations
+ERROR:   Error events with possible recovery
+FATAL:   Severe errors requiring attention
+```
+
+### Health Check Implementation
+
+```java
+public class MQHealthCheck {
+    public HealthStatus check() {
+        if (!connectionService.isConnected()) {
+            return HealthStatus.DOWN;
+        }
+        
+        try {
+            int depth = queueService.getQueueDepth();
+            return HealthStatus.UP;
+        } catch (Exception e) {
+            return HealthStatus.DEGRADED;
+        }
+    }
+}
+```
+
+---
+
+## 🚀 Deployment & Operations
+
+### Containerization
+
+```dockerfile
+FROM openjdk:11-jre-slim
+
+WORKDIR /app
+
+COPY target/mq-system-1.0.0.jar .
+COPY src/main/resources/mq-config.properties .
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+  CMD java MQHealthCheck || exit 1
+
+CMD ["java", "-Xmx512m", "-jar", "mq-system-1.0.0.jar"]
+```
+
+### Kubernetes Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mq-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mq-system
+  template:
+    metadata:
+      labels:
+        app: mq-system
+    spec:
+      containers:
+      - name: mq-system
+        image: mq-system:1.0.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MQ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mq-config
+              key: host
+        livenessProbe:
+          exec:
+            command:
+            - java
+            - MQHealthCheck
+          initialDelaySeconds: 15
+          periodSeconds: 20
+```
+
+---
+
+## 📚 Code Examples
+
+### Complete Connection Lifecycle
+
+```java
+public class MQSystemExample {
+    public static void main(String[] args) {
+        MQConnectionService connService = null;
+        QueueOperationService queueService = null;
+        
+        try {
+            // 1. Load configuration
+            MQConfiguration config = new MQConfiguration();
+            ConnectionConfig connConfig = new ConnectionConfig();
+            connConfig.setHost(config.getString("mq.host", "localhost"));
+            connConfig.setPort(config.getInteger("mq.port", 1414));
+            // ... set other config
+            
+            // 2. Create services
+            connService = new MQConnectionService(connConfig);
+            queueService = new QueueOperationService(connService);
+            
+            // 3. Connect
+            connService.connect();
+            System.out.println("Connected!");
+            
+            // 4. Perform operations
+            int depth = queueService.getQueueDepth();
+            System.out.println("Queue depth: " + depth);
+            
+            String msgId = queueService.putMessage("Hello MQ", 5);
+            System.out.println("Message sent: " + msgId);
+            
+            MQMessage msg = queueService.getMessage();
+            System.out.println("Received: " + msg.getContent());
+            
+        } catch (MQConnectionException | QueueOperationException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            
+        } finally {
+            // 5. Cleanup
+            if (connService != null && connService.isConnected()) {
+                try {
+                    connService.disconnect();
+                } catch (MQConnectionException e) {
+                    System.err.println("Disconnect error: " + e.getMessage());
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+## 🔗 Integration Patterns
+
+### With Spring Boot
+
+```java
+@Configuration
+public class MQConfiguration {
+    @Bean
+    public MQConnectionService mqConnectionService() {
+        return new MQConnectionService(connectionConfig());
+    }
+    
+    @Bean
+    public QueueOperationService queueOperationService() {
+        return new QueueOperationService(mqConnectionService());
+    }
+}
+```
+
+### With REST API
+
+```java
+@RestController
+@RequestMapping("/api/mq")
+public class MQController {
+    @Autowired
+    private QueueOperationService queueService;
+    
+    @GetMapping("/depth")
+    public ResponseEntity<Integer> getQueueDepth() {
+        try {
+            int depth = queueService.getQueueDepth();
+            return ResponseEntity.ok(depth);
+        } catch (QueueOperationException e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+}
+```
+
+---
+
+**Last Updated**: November 28, 2025
+**Version**: 1.0.0
