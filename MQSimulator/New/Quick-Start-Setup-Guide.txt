@@ -1,0 +1,466 @@
+# MQ System - Quick Start Guide
+
+Complete step-by-step guide to set up and run the Java Message Queue System.
+
+## 🚀 Quick Start (5 Minutes)
+
+### Step 1: Clone/Download Project
+
+```bash
+git clone https://github.com/your-org/mq-system.git
+cd mq-system
+```
+
+### Step 2: Verify Prerequisites
+
+```bash
+# Check Java version
+java -version
+# Output: java version "11.0.x" or higher
+
+# Check Maven version
+mvn -version
+# Output: Apache Maven 3.8.x or higher
+```
+
+### Step 3: Configure MQ Connection
+
+Edit `src/main/resources/mq-config.properties`:
+
+```properties
+# Update with your MQ server details
+mq.host=your-mq-server.example.com
+mq.port=1414
+mq.queue.manager=QM1
+mq.queue.name=DEV.QUEUE.1
+```
+
+### Step 4: Set Up SSL Certificates (if using SSL)
+
+```bash
+# Copy certificates to SSL directory
+mkdir -p src/main/resources/ssl
+cp /path/to/truststore.jks src/main/resources/ssl/
+cp /path/to/keystore.jks src/main/resources/ssl/
+
+# Update certificate passwords in config
+mq.ssl.truststore.password=your-truststore-password
+mq.ssl.keystore.password=your-keystore-password
+```
+
+### Step 5: Build Project
+
+```bash
+# Build with Maven
+mvn clean package
+
+# Output: BUILD SUCCESS
+# Location: target/mq-system-1.0.0.jar
+```
+
+### Step 6: Run Application
+
+```bash
+# Using Maven
+mvn exec:java -Dexec.mainClass="com.messagequeue.MQSystemApp"
+
+# OR using JAR directly
+java -Dcom.ibm.mq.cfg.useIBMCipherMappings=false \
+  -Djavax.net.ssl.trustStore=src/main/resources/ssl/truststore.jks \
+  -Djavax.net.ssl.trustStorePassword=truststorePassword \
+  -Djavax.net.ssl.keyStore=src/main/resources/ssl/keystore.jks \
+  -Djavax.net.ssl.keyStorePassword=keystorePassword \
+  -jar target/mq-system-1.0.0.jar
+```
+
+## 📋 Complete Setup Instructions
+
+### Prerequisites Installation
+
+#### Windows
+
+```powershell
+# Install JDK 11+
+choco install openjdk11
+
+# Install Maven
+choco install maven
+
+# Verify installation
+java -version
+mvn -version
+```
+
+#### macOS
+
+```bash
+# Install JDK 11+
+brew install openjdk@11
+
+# Install Maven
+brew install maven
+
+# Verify installation
+java -version
+mvn -version
+```
+
+#### Linux (Ubuntu/Debian)
+
+```bash
+# Install JDK 11+
+sudo apt-get update
+sudo apt-get install openjdk-11-jdk
+
+# Install Maven
+sudo apt-get install maven
+
+# Verify installation
+java -version
+mvn -version
+```
+
+### Project Setup from Scratch
+
+#### 1. Create Maven Project
+
+```bash
+mvn archetype:generate \
+  -DgroupId=com.messagequeue \
+  -DartifactId=mq-system \
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DinteractiveMode=false
+
+cd mq-system
+```
+
+#### 2. Update pom.xml
+
+Replace the dependencies section with the provided pom.xml content.
+
+#### 3. Create Package Structure
+
+```bash
+# Create source directories
+mkdir -p src/main/java/com/messagequeue/{config,model,service,util,exception,cli}
+mkdir -p src/main/resources/ssl
+mkdir -p src/test/java/com/messagequeue
+mkdir -p logs
+```
+
+#### 4. Add Source Files
+
+Copy each Java class to the corresponding package:
+
+- Exception classes → `src/main/java/com/messagequeue/exception/`
+- Model classes → `src/main/java/com/messagequeue/model/`
+- Utility classes → `src/main/java/com/messagequeue/util/`
+- Service classes → `src/main/java/com/messagequeue/service/`
+- CLI classes → `src/main/java/com/messagequeue/cli/`
+- Main class → `src/main/java/com/messagequeue/MQSystemApp.java`
+
+#### 5. Add Configuration Files
+
+- `src/main/resources/mq-config.properties` - MQ configuration
+- `src/main/resources/logback.xml` - Logging configuration
+
+#### 6. Build and Test
+
+```bash
+# Build
+mvn clean compile
+
+# Run tests
+mvn test
+
+# Package
+mvn package
+
+# Run application
+java -jar target/mq-system-1.0.0.jar
+```
+
+## 🔐 SSL Certificate Setup
+
+### Generate Self-Signed Certificates (Testing Only)
+
+```bash
+# Generate truststore
+keytool -genkey -alias mq-server -keyalg RSA -keystore truststore.jks \
+  -keysize 2048 -validity 365
+
+# Generate keystore
+keytool -genkey -alias mq-client -keyalg RSA -keystore keystore.jks \
+  -keysize 2048 -validity 365
+
+# Export certificate from keystore
+keytool -export -alias mq-client -keystore keystore.jks -file mq-client.cer
+
+# Import certificate to truststore
+keytool -import -alias mq-client -file mq-client.cer -keystore truststore.jks
+```
+
+### Import Production Certificates
+
+```bash
+# Import CA certificate
+keytool -import -alias ca-cert -file ca-certificate.pem \
+  -keystore truststore.jks -storepass password
+
+# Import client certificate chain
+keytool -import -alias client-cert -file client-certificate.pem \
+  -keystore keystore.jks -storepass password
+
+# Convert PEM to JKS (if needed)
+openssl pkcs12 -export -in certificate.pem -inkey private-key.pem \
+  -out certificate.p12 -name "mq-client"
+
+keytool -importkeystore -srckeystore certificate.p12 \
+  -srcstoretype PKCS12 -destkeystore keystore.jks -deststoretype JKS
+```
+
+## 📝 Configuration Files
+
+### mq-config.properties
+
+Key configuration properties:
+
+```properties
+# Required
+mq.host=localhost
+mq.port=1414
+mq.queue.manager=QM1
+mq.queue.name=DEV.QUEUE.1
+
+# Optional - Authentication
+mq.username=mqm
+mq.password=password
+
+# Optional - SSL
+mq.ssl.enabled=true
+mq.ssl.truststore.path=src/main/resources/ssl/truststore.jks
+mq.ssl.keystore.path=src/main/resources/ssl/keystore.jks
+
+# Connection options
+mq.connection.timeout=30
+mq.max.retries=3
+mq.retry.delay=5000
+```
+
+### logback.xml
+
+Logging configuration:
+
+```xml
+<!-- Console logging in INFO level -->
+<!-- File logging with rolling policy -->
+<!-- Max file size: 10MB, retention: 10 days -->
+```
+
+## 🧪 Testing the Application
+
+### Test Connection
+
+```bash
+# Run application
+java -jar target/mq-system-1.0.0.jar
+
+# At prompt, select option 1 to connect
+# Expected output: Successfully connected to MQ server!
+```
+
+### Test Queue Operations
+
+```
+Menu Option 2: Check Queue Depth
+Menu Option 3: Get Queue Description
+Menu Option 4: Retrieve Message Statuses
+```
+
+### Test Message Operations
+
+```
+Menu Option 5: Put Message to Queue
+Menu Option 6: Get Message from Queue
+Menu Option 8: Dump Queue Contents
+```
+
+## 🔧 Troubleshooting
+
+### Build Issues
+
+**Problem**: `mvn: command not found`
+```bash
+# Add Maven to PATH
+export PATH=$PATH:/path/to/apache-maven-3.x.x/bin
+```
+
+**Problem**: Compilation errors
+```bash
+# Check Java version compatibility
+java -version  # Should be 11+
+
+# Clean and rebuild
+mvn clean compile
+```
+
+### Runtime Issues
+
+**Problem**: Connection timeout
+```bash
+# Check MQ server is running and accessible
+ping -c 1 mq-server.com
+telnet mq-server.com 1414
+
+# Check firewall rules
+```
+
+**Problem**: SSL certificate error
+```bash
+# Verify certificate paths in config
+ls -la src/main/resources/ssl/
+
+# Verify certificate validity
+keytool -list -v -keystore truststore.jks
+
+# Verify password is correct
+keytool -list -keystore truststore.jks
+```
+
+**Problem**: Authentication failure
+```bash
+# Verify credentials in mq-config.properties
+# Check MQ server user permissions
+# Enable debug logging for SSL details
+```
+
+### Logging
+
+Enable debug logging to troubleshoot:
+
+```bash
+# In logback.xml, change level to DEBUG
+<logger name="com.messagequeue" level="DEBUG">
+
+# View logs
+tail -f logs/mq-system.log
+```
+
+## 📊 Performance Tuning
+
+### Connection Pooling
+
+Modify `MQConnectionService.java`:
+
+```java
+// Implement connection pool
+private static final int POOL_SIZE = 5;
+private Queue<MQQueueManager> connectionPool;
+```
+
+### Message Batch Operations
+
+Modify `QueueOperationService.java`:
+
+```java
+// Batch get operations
+public List<MQMessage> getBatchMessages(int batchSize) {
+    // Implement batch retrieval
+}
+```
+
+### Memory Optimization
+
+```bash
+# Set JVM memory limits
+java -Xms256m -Xmx512m -jar target/mq-system-1.0.0.jar
+
+# Monitor memory usage
+jps -l  # List Java processes
+jstat -gc -h10 <PID> 1000  # GC statistics every 1 second
+```
+
+## 📦 Deployment
+
+### Docker Deployment
+
+Create `Dockerfile`:
+
+```dockerfile
+FROM openjdk:11-jre-slim
+
+COPY target/mq-system-1.0.0.jar /app/mq-system.jar
+COPY src/main/resources/ssl /app/ssl
+
+WORKDIR /app
+
+CMD ["java", "-Xmx512m", "-jar", "mq-system.jar"]
+```
+
+Build and run:
+
+```bash
+docker build -t mq-system:1.0.0 .
+docker run -it \
+  -e MQ_HOST=mq-server.com \
+  -e MQ_PORT=1414 \
+  -v /path/to/ssl:/app/ssl \
+  mq-system:1.0.0
+```
+
+### Production Deployment
+
+```bash
+# Create systemd service file
+sudo tee /etc/systemd/system/mq-system.service > /dev/null <<EOF
+[Unit]
+Description=MQ System Application
+After=network.target
+
+[Service]
+Type=simple
+User=mquser
+WorkingDirectory=/opt/mq-system
+ExecStart=/usr/bin/java -jar /opt/mq-system/mq-system-1.0.0.jar
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start service
+sudo systemctl daemon-reload
+sudo systemctl enable mq-system
+sudo systemctl start mq-system
+
+# Check status
+sudo systemctl status mq-system
+```
+
+## 📚 Additional Resources
+
+- [IBM MQ Documentation](https://www.ibm.com/docs/en/ibm-mq)
+- [Java Message Service (JMS) Guide](https://docs.oracle.com/javaee/7/tutorial/jms-concepts.html)
+- [Spring Boot MQ Integration](https://spring.io/projects/spring-boot)
+- [SSL/TLS Configuration Best Practices](https://owasp.org/www-community/attacks/Manipulator-in-the-middle_attack)
+
+## 💡 Tips & Best Practices
+
+1. **Always use SSL in production**
+2. **Store passwords in environment variables or vaults**
+3. **Monitor queue depths regularly**
+4. **Implement proper error handling and logging**
+5. **Use connection pooling for high-throughput scenarios**
+6. **Test with sample messages before production use**
+7. **Regular backup of configuration files**
+8. **Keep IBM MQ client library updated**
+
+## 📞 Support & Issues
+
+Report issues on GitHub or contact the development team at support@example.com
+
+---
+
+**Last Updated**: November 28, 2025
+**Version**: 1.0.0
