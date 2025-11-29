@@ -1,0 +1,577 @@
+## Java MQ System - Service Classes Implementation
+
+Contains all service layer classes for MQ operations.
+
+---
+
+### SERVICE CLASSES (com.messagequeue.service)
+
+#### MQConnectionService.java
+```java
+package com.messagequeue.service;
+
+import com.ibm.mq.MQC;
+import com.ibm.mq.MQException;
+import com.ibm.mq.MQQueue;
+import com.ibm.mq.MQQueueManager;
+import com.ibm.mq.jms.MQConnectionFactory;
+import com.ibm.msg.client.wmq.WMQConstants;
+import com.messagequeue.exception.MQConnectionException;
+import com.messagequeue.model.ConnectionConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Service layer for managing MQ connections.
+ * Handles connection establishment, SSL configuration, and lifecycle management.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class MQConnectionService {
+    private static final Logger logger = LoggerFactory.getLogger(MQConnectionService.class);
+    private static final int DEFAULT_TIMEOUT = 30000; // 30 seconds
+    
+    private MQQueueManager queueManager;
+    private MQQueue queue;
+    private ConnectionConfig config;
+    private boolean isConnected;
+    
+    /**
+     * Initializes the service with connection configuration.
+     * 
+     * @param config the connection configuration
+     */
+    public MQConnectionService(ConnectionConfig config) {
+        this.config = config;
+        this.isConnected = false;
+    }
+    
+    /**
+     * Establishes connection to MQ server.
+     * 
+     * @throws MQConnectionException if connection fails
+     */
+    public void connect() throws MQConnectionException {
+        if (isConnected) {
+            logger.warn("Already connected to MQ server");
+            return;
+        }
+        
+        try {
+            logger.info("Attempting connection to {}:{}", config.getHost(), config.getPort());
+            
+            // Create queue manager using direct MQ API
+            queueManager = new MQQueueManager(
+                config.getQueueManagerName(),
+                createMQEnvironment()
+            );
+            
+            logger.info("Successfully connected to queue manager: {}", 
+                config.getQueueManagerName());
+            
+            // Open queue
+            queue = queueManager.accessQueue(
+                config.getQueueName(),
+                MQC.MQOO_INPUT_AS_Q_DEF | MQC.MQOO_OUTPUT | MQC.MQOO_INQUIRE
+            );
+            
+            isConnected = true;
+            logger.info("Queue opened successfully: {}", config.getQueueName());
+            
+        } catch (MQException e) {
+            isConnected = false;
+            throw new MQConnectionException(
+                "Failed to connect to MQ: " + e.getMessage(), e
+            );
+        }
+    }
+    
+    /**
+     * Creates MQ environment properties for connection.
+     * 
+     * @return hashtable with MQ properties
+     */
+    private java.util.Hashtable<String, Object> createMQEnvironment() {
+        java.util.Hashtable<String, Object> env = new java.util.Hashtable<>();
+        
+        env.put(MQC.HOST_NAME_PROPERTY, config.getHost());
+        env.put(MQC.PORT_PROPERTY, config.getPort());
+        env.put(MQC.CHANNEL_PROPERTY, config.getChannel());
+        env.put(MQC.TCP_CONNECT_OPTIONS, MQC.TCP_CLIENT_MODE);
+        env.put(MQC.CONNECT_OPTIONS, MQC.MQCNO_ALLOCATE_SUB_QUEUE);
+        
+        if (config.getUsername() != null) {
+            env.put(MQC.USER_ID_PROPERTY, config.getUsername());
+            env.put(MQC.PASSWORD_PROPERTY, config.getPassword());
+        }
+        
+        if (config.isSslEnabled()) {
+            env.put(MQC.SSL_CERT_STORE_PROPERTY, config.getSslTrustStore());
+            env.put(MQC.SSL_CIPHER_SUITE_PROPERTY, config.getSslCipherSuite());
+        }
+        
+        return env;
+    }
+    
+    /**
+     * Disconnects from MQ server.
+     * 
+     * @throws MQConnectionException if disconnection fails
+     */
+    public void disconnect() throws MQConnectionException {
+        try {
+            if (queue != null) {
+                queue.close();
+                logger.info("Queue closed successfully");
+            }
+            
+            if (queueManager != null) {
+                queueManager.disconnect();
+                logger.info("Disconnected from queue manager");
+            }
+            
+            isConnected = false;
+            
+        } catch (MQException e) {
+            throw new MQConnectionException(
+                "Failed to disconnect properly: " + e.getMessage(), e
+            );
+        }
+    }
+    
+    /**
+     * Checks if currently connected to MQ.
+     * 
+     * @return true if connected, false otherwise
+     */
+    public boolean isConnected() {
+        return isConnected && queueManager != null && queue != null;
+    }
+    
+    /**
+     * Gets the queue manager.
+     * 
+     * @return MQQueueManager instance
+     * @throws MQConnectionException if not connected
+     */
+    public MQQueueManager getQueueManager() throws MQConnectionException {
+        if (!isConnected()) {
+            throw new MQConnectionException("Not connected to MQ server");
+        }
+        return queueManager;
+    }
+    
+    /**
+     * Gets the opened queue.
+     * 
+     * @return MQQueue instance
+     * @throws MQConnectionException if not connected
+     */
+    public MQQueue getQueue() throws MQConnectionException {
+        if (!isConnected()) {
+            throw new MQConnectionException("Not connected to MQ server");
+        }
+        return queue;
+    }
+    
+    /**
+     * Gets connection information.
+     * 
+     * @return formatted connection info string
+     */
+    public String getConnectionInfo() {
+        return String.format(
+            "MQ Connection Info:\n" +
+            "  Host: %s\n" +
+            "  Port: %d\n" +
+            "  Queue Manager: %s\n" +
+            "  Queue: %s\n" +
+            "  Channel: %s\n" +
+            "  SSL Enabled: %s\n" +
+            "  Status: %s",
+            config.getHost(),
+            config.getPort(),
+            config.getQueueManagerName(),
+            config.getQueueName(),
+            config.getChannel(),
+            config.isSslEnabled(),
+            isConnected ? "CONNECTED" : "DISCONNECTED"
+        );
+    }
+}
+```
+
+#### QueueOperationService.java
+```java
+package com.messagequeue.service;
+
+import com.ibm.mq.MQC;
+import com.ibm.mq.MQException;
+import com.ibm.mq.MQMessage;
+import com.ibm.mq.MQQueue;
+import com.messagequeue.exception.QueueOperationException;
+import com.messagequeue.model.MQMessage;
+import com.messagequeue.model.QueueInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Service layer for queue operations.
+ * Handles put, get, clear, and inquiry operations on queues.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class QueueOperationService {
+    private static final Logger logger = LoggerFactory.getLogger(QueueOperationService.class);
+    private static final int MAX_MESSAGE_SIZE = 4194304; // 4MB default
+    
+    private MQConnectionService connectionService;
+    
+    /**
+     * Initializes service with connection service.
+     * 
+     * @param connectionService the MQ connection service
+     */
+    public QueueOperationService(MQConnectionService connectionService) {
+        this.connectionService = connectionService;
+    }
+    
+    /**
+     * Gets the current depth of the queue.
+     * 
+     * @return number of messages in queue
+     * @throws QueueOperationException if operation fails
+     */
+    public int getQueueDepth() throws QueueOperationException {
+        try {
+            MQQueue queue = connectionService.getQueue();
+            int depth = queue.getCurrentDepth();
+            logger.info("Queue depth: {}", depth);
+            return depth;
+            
+        } catch (MQException e) {
+            throw new QueueOperationException("Failed to get queue depth: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Gets queue description and metadata.
+     * 
+     * @return QueueInfo object with metadata
+     * @throws QueueOperationException if operation fails
+     */
+    public QueueInfo getQueueDescription() throws QueueOperationException {
+        try {
+            MQQueue queue = connectionService.getQueue();
+            QueueInfo info = new QueueInfo(
+                queue.getQueueName().trim(),
+                connectionService.getQueueManager().getName()
+            );
+            
+            info.setCurrentDepth(queue.getCurrentDepth());
+            info.setMaxQueueDepth(queue.getMaximumDepth());
+            info.setMaxMessageLength(queue.getMaximumMessageLength());
+            info.setQueueType(String.valueOf(queue.getQueueType()));
+            info.setDescription(queue.getQueueDescription().trim());
+            info.setOpen(true);
+            
+            logger.info("Retrieved queue description: {}", info);
+            return info;
+            
+        } catch (MQException e) {
+            throw new QueueOperationException(
+                "Failed to get queue description: " + e.getMessage(), e
+            );
+        }
+    }
+    
+    /**
+     * Gets status of all messages in queue.
+     * 
+     * @return list of message statuses
+     * @throws QueueOperationException if operation fails
+     */
+    public List<String> getMessageStatuses() throws QueueOperationException {
+        List<String> statuses = new ArrayList<>();
+        
+        try {
+            MQQueue queue = connectionService.getQueue();
+            MQMessage message = new MQMessage();
+            message.messageType = MQC.MQMT_DATAGRAM;
+            
+            int count = 0;
+            while (count < 100) { // Limit to 100 messages for safety
+                try {
+                    queue.get(message, new MQC.MQGMO());
+                    statuses.add(String.format(
+                        "Message %d: ID=%s, Priority=%d, Size=%d, Status=Active",
+                        count + 1,
+                        new String(message.messageId),
+                        message.priority,
+                        message.getTotalMessageLength()
+                    ));
+                    count++;
+                } catch (MQException e) {
+                    if (e.reasonCode == MQC.MQRC_NO_MSG_AVAILABLE) {
+                        break;
+                    }
+                    throw e;
+                }
+            }
+            
+            logger.info("Retrieved {} message statuses", count);
+            return statuses;
+            
+        } catch (MQException e) {
+            throw new QueueOperationException(
+                "Failed to get message statuses: " + e.getMessage(), e
+            );
+        }
+    }
+    
+    /**
+     * Clears all messages from the queue.
+     * 
+     * @return number of messages cleared
+     * @throws QueueOperationException if operation fails
+     */
+    public int clearQueue() throws QueueOperationException {
+        try {
+            MQQueue queue = connectionService.getQueue();
+            int count = 0;
+            MQMessage message = new MQMessage();
+            
+            while (true) {
+                try {
+                    queue.get(message);
+                    count++;
+                } catch (MQException e) {
+                    if (e.reasonCode == MQC.MQRC_NO_MSG_AVAILABLE) {
+                        break;
+                    }
+                    throw e;
+                }
+            }
+            
+            logger.info("Cleared {} messages from queue", count);
+            return count;
+            
+        } catch (MQException e) {
+            throw new QueueOperationException(
+                "Failed to clear queue: " + e.getMessage(), e
+            );
+        }
+    }
+    
+    /**
+     * Dumps queue contents (retrieves messages without removing).
+     * 
+     * @param limit maximum number of messages to retrieve
+     * @return list of messages
+     * @throws QueueOperationException if operation fails
+     */
+    public List<com.messagequeue.model.MQMessage> dumpQueueContents(int limit) 
+            throws QueueOperationException {
+        List<com.messagequeue.model.MQMessage> messages = new ArrayList<>();
+        
+        try {
+            MQQueue queue = connectionService.getQueue();
+            MQMessage message = new MQMessage();
+            
+            for (int i = 0; i < limit; i++) {
+                try {
+                    queue.get(message);
+                    com.messagequeue.model.MQMessage mqMsg = 
+                        new com.messagequeue.model.MQMessage(
+                            new String(message.messageId).trim(),
+                            message.readString(message.getTotalMessageLength()),
+                            message.priority
+                        );
+                    
+                    messages.add(mqMsg);
+                    message.clearMessage();
+                    
+                } catch (MQException e) {
+                    if (e.reasonCode == MQC.MQRC_NO_MSG_AVAILABLE) {
+                        break;
+                    }
+                    throw e;
+                } catch (IOException e) {
+                    logger.error("Failed to read message content", e);
+                    break;
+                }
+            }
+            
+            logger.info("Dumped {} messages from queue", messages.size());
+            return messages;
+            
+        } catch (MQException e) {
+            throw new QueueOperationException(
+                "Failed to dump queue: " + e.getMessage(), e
+            );
+        }
+    }
+    
+    /**
+     * Puts a message into the queue.
+     * 
+     * @param content the message content
+     * @param priority message priority (0-9)
+     * @return message ID
+     * @throws QueueOperationException if operation fails
+     */
+    public String putMessage(String content, int priority) throws QueueOperationException {
+        try {
+            if (content.length() > MAX_MESSAGE_SIZE) {
+                throw new QueueOperationException(
+                    "Message exceeds maximum size: " + content.length()
+                );
+            }
+            
+            MQQueue queue = connectionService.getQueue();
+            MQMessage message = new MQMessage();
+            message.writeString(content);
+            message.priority = priority;
+            
+            queue.put(message);
+            
+            String messageId = new String(message.messageId).trim();
+            logger.info("Message sent successfully. ID: {}, Priority: {}", messageId, priority);
+            
+            return messageId;
+            
+        } catch (MQException | IOException e) {
+            throw new QueueOperationException(
+                "Failed to put message: " + e.getMessage(), e
+            );
+        }
+    }
+    
+    /**
+     * Gets a message from the queue.
+     * 
+     * @return the retrieved message
+     * @throws QueueOperationException if operation fails or no message available
+     */
+    public com.messagequeue.model.MQMessage getMessage() throws QueueOperationException {
+        try {
+            MQQueue queue = connectionService.getQueue();
+            MQMessage message = new MQMessage();
+            
+            queue.get(message);
+            
+            String content = message.readString(message.getTotalMessageLength());
+            com.messagequeue.model.MQMessage mqMsg = 
+                new com.messagequeue.model.MQMessage(
+                    new String(message.messageId).trim(),
+                    content,
+                    message.priority
+                );
+            
+            logger.info("Retrieved message: {}", mqMsg.getMessageId());
+            return mqMsg;
+            
+        } catch (MQException e) {
+            if (e.reasonCode == MQC.MQRC_NO_MSG_AVAILABLE) {
+                throw new QueueOperationException("No message available in queue", e);
+            }
+            throw new QueueOperationException("Failed to get message: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new QueueOperationException("Failed to read message: " + e.getMessage(), e);
+        }
+    }
+}
+```
+
+#### MessageInspectionService.java
+```java
+package com.messagequeue.service;
+
+import com.messagequeue.model.MQMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Service for inspecting and analyzing message contents and metadata.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class MessageInspectionService {
+    private static final Logger logger = LoggerFactory.getLogger(MessageInspectionService.class);
+    private static final DateTimeFormatter formatter = 
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault());
+    
+    /**
+     * Inspects message and returns detailed information.
+     * 
+     * @param message the message to inspect
+     * @return formatted message details
+     */
+    public String inspectMessage(MQMessage message) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n===== Message Details =====\n");
+        sb.append(String.format("Message ID: %s\n", message.getMessageId()));
+        sb.append(String.format("Priority: %d\n", message.getPriority()));
+        sb.append(String.format("Size: %d bytes\n", message.getSize()));
+        sb.append(String.format("Status: %s\n", message.getStatus()));
+        sb.append(String.format("Format: %s\n", message.getMessageFormat()));
+        sb.append(String.format("Timestamp: %s\n", 
+            formatter.format(Instant.ofEpochMilli(message.getTimestamp()))));
+        sb.append(String.format("Content: %s\n", formatContent(message.getContent(), 100)));
+        sb.append("============================\n");
+        
+        return sb.toString();
+    }
+    
+    /**
+     * Formats message content for display.
+     * 
+     * @param content the content to format
+     * @param maxLength maximum display length
+     * @return formatted content
+     */
+    private String formatContent(String content, int maxLength) {
+        if (content.length() <= maxLength) {
+            return content;
+        }
+        return content.substring(0, maxLength) + "... [truncated]";
+    }
+    
+    /**
+     * Gets message headers as map.
+     * 
+     * @param message the message
+     * @return map of message properties
+     */
+    public Map<String, String> getMessageHeaders(MQMessage message) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("MessageID", message.getMessageId());
+        headers.put("Priority", String.valueOf(message.getPriority()));
+        headers.put("Size", String.valueOf(message.getSize()));
+        headers.put("Status", message.getStatus());
+        headers.put("Format", message.getMessageFormat());
+        headers.put("Timestamp", formatter.format(
+            Instant.ofEpochMilli(message.getTimestamp())));
+        
+        return headers;
+    }
+}
+```
+
+---
+
+Continue to CLI and Main Application classes in next file.
