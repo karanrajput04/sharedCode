@@ -1,0 +1,530 @@
+## Complete Java MQ System - Core Classes Implementation
+
+This file contains all core Java classes for the Message Queue System. Copy each class to the appropriate package directory.
+
+---
+
+### 1. EXCEPTION CLASSES (com.messagequeue.exception)
+
+#### MQConnectionException.java
+```java
+package com.messagequeue.exception;
+
+/**
+ * Exception thrown when MQ connection operations fail.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class MQConnectionException extends Exception {
+    
+    public MQConnectionException(String message) {
+        super(message);
+    }
+    
+    public MQConnectionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+```
+
+#### QueueOperationException.java
+```java
+package com.messagequeue.exception;
+
+/**
+ * Exception thrown when queue operations fail.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class QueueOperationException extends Exception {
+    
+    public QueueOperationException(String message) {
+        super(message);
+    }
+    
+    public QueueOperationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+```
+
+#### ConfigurationException.java
+```java
+package com.messagequeue.exception;
+
+/**
+ * Exception thrown when configuration is invalid or missing.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class ConfigurationException extends Exception {
+    
+    public ConfigurationException(String message) {
+        super(message);
+    }
+    
+    public ConfigurationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+```
+
+---
+
+### 2. MODEL CLASSES (com.messagequeue.model)
+
+#### ConnectionConfig.java
+```java
+package com.messagequeue.model;
+
+import java.io.Serializable;
+
+/**
+ * Configuration model for MQ connection parameters.
+ * Encapsulates all connection-related settings.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class ConnectionConfig implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private String host;
+    private int port;
+    private String queueManagerName;
+    private String queueName;
+    private String channel;
+    private String username;
+    private String password;
+    private boolean sslEnabled;
+    private String sslTrustStore;
+    private String sslTrustStorePassword;
+    private String sslKeyStore;
+    private String sslKeyStorePassword;
+    private String sslCipherSuite;
+    private int connectionTimeout;
+    private int maxRetries;
+    private long retryDelay;
+    
+    /**
+     * Default constructor.
+     */
+    public ConnectionConfig() {
+        this.connectionTimeout = 30;
+        this.maxRetries = 3;
+        this.retryDelay = 5000;
+        this.sslEnabled = true;
+    }
+    
+    // Getters and Setters
+    public String getHost() { return host; }
+    public void setHost(String host) { this.host = host; }
+    
+    public int getPort() { return port; }
+    public void setPort(int port) { this.port = port; }
+    
+    public String getQueueManagerName() { return queueManagerName; }
+    public void setQueueManagerName(String queueManagerName) { this.queueManagerName = queueManagerName; }
+    
+    public String getQueueName() { return queueName; }
+    public void setQueueName(String queueName) { this.queueName = queueName; }
+    
+    public String getChannel() { return channel; }
+    public void setChannel(String channel) { this.channel = channel; }
+    
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    
+    public boolean isSslEnabled() { return sslEnabled; }
+    public void setSslEnabled(boolean sslEnabled) { this.sslEnabled = sslEnabled; }
+    
+    public String getSslTrustStore() { return sslTrustStore; }
+    public void setSslTrustStore(String sslTrustStore) { this.sslTrustStore = sslTrustStore; }
+    
+    public String getSslTrustStorePassword() { return sslTrustStorePassword; }
+    public void setSslTrustStorePassword(String sslTrustStorePassword) { 
+        this.sslTrustStorePassword = sslTrustStorePassword; 
+    }
+    
+    public String getSslKeyStore() { return sslKeyStore; }
+    public void setSslKeyStore(String sslKeyStore) { this.sslKeyStore = sslKeyStore; }
+    
+    public String getSslKeyStorePassword() { return sslKeyStorePassword; }
+    public void setSslKeyStorePassword(String sslKeyStorePassword) { 
+        this.sslKeyStorePassword = sslKeyStorePassword; 
+    }
+    
+    public String getSslCipherSuite() { return sslCipherSuite; }
+    public void setSslCipherSuite(String sslCipherSuite) { this.sslCipherSuite = sslCipherSuite; }
+    
+    public int getConnectionTimeout() { return connectionTimeout; }
+    public void setConnectionTimeout(int connectionTimeout) { this.connectionTimeout = connectionTimeout; }
+    
+    public int getMaxRetries() { return maxRetries; }
+    public void setMaxRetries(int maxRetries) { this.maxRetries = maxRetries; }
+    
+    public long getRetryDelay() { return retryDelay; }
+    public void setRetryDelay(long retryDelay) { this.retryDelay = retryDelay; }
+    
+    @Override
+    public String toString() {
+        return "ConnectionConfig{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", queueManagerName='" + queueManagerName + '\'' +
+                ", queueName='" + queueName + '\'' +
+                ", channel='" + channel + '\'' +
+                ", sslEnabled=" + sslEnabled +
+                ", connectionTimeout=" + connectionTimeout +
+                ", maxRetries=" + maxRetries +
+                '}';
+    }
+}
+```
+
+#### MQMessage.java
+```java
+package com.messagequeue.model;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * Represents a single message in the MQ queue.
+ * Contains message metadata and content.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class MQMessage implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private String messageId;
+    private String content;
+    private int priority;
+    private long timestamp;
+    private String status;
+    private int size;
+    private String messageFormat;
+    private long expiration;
+    
+    /**
+     * Constructor with essential parameters.
+     */
+    public MQMessage(String messageId, String content, int priority) {
+        this.messageId = messageId;
+        this.content = content;
+        this.priority = priority;
+        this.timestamp = System.currentTimeMillis();
+        this.status = "ACTIVE";
+        this.size = content.length();
+        this.messageFormat = "TEXT";
+        this.expiration = -1;
+    }
+    
+    // Getters and Setters
+    public String getMessageId() { return messageId; }
+    public void setMessageId(String messageId) { this.messageId = messageId; }
+    
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+    
+    public int getPriority() { return priority; }
+    public void setPriority(int priority) { this.priority = priority; }
+    
+    public long getTimestamp() { return timestamp; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    
+    public int getSize() { return size; }
+    public void setSize(int size) { this.size = size; }
+    
+    public String getMessageFormat() { return messageFormat; }
+    public void setMessageFormat(String messageFormat) { this.messageFormat = messageFormat; }
+    
+    public long getExpiration() { return expiration; }
+    public void setExpiration(long expiration) { this.expiration = expiration; }
+    
+    @Override
+    public String toString() {
+        return String.format(
+            "MQMessage{ID=%s, Priority=%d, Size=%d, Status=%s, Format=%s}",
+            messageId, priority, size, status, messageFormat
+        );
+    }
+}
+```
+
+#### QueueInfo.java
+```java
+package com.messagequeue.model;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
+/**
+ * Contains metadata and status information about a queue.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class QueueInfo implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    private String queueName;
+    private String queueManagerName;
+    private int currentDepth;
+    private int maxQueueDepth;
+    private int maxMessageLength;
+    private String queueType;
+    private String description;
+    private boolean isOpen;
+    private long creationTime;
+    private int enabledInputOutput;
+    
+    /**
+     * Constructor with queue name.
+     */
+    public QueueInfo(String queueName, String queueManagerName) {
+        this.queueName = queueName;
+        this.queueManagerName = queueManagerName;
+        this.creationTime = System.currentTimeMillis();
+        this.isOpen = false;
+        this.enabledInputOutput = 3; // 1=put, 2=get, 3=both
+    }
+    
+    // Getters and Setters
+    public String getQueueName() { return queueName; }
+    public void setQueueName(String queueName) { this.queueName = queueName; }
+    
+    public String getQueueManagerName() { return queueManagerName; }
+    public void setQueueManagerName(String queueManagerName) { this.queueManagerName = queueManagerName; }
+    
+    public int getCurrentDepth() { return currentDepth; }
+    public void setCurrentDepth(int currentDepth) { this.currentDepth = currentDepth; }
+    
+    public int getMaxQueueDepth() { return maxQueueDepth; }
+    public void setMaxQueueDepth(int maxQueueDepth) { this.maxQueueDepth = maxQueueDepth; }
+    
+    public int getMaxMessageLength() { return maxMessageLength; }
+    public void setMaxMessageLength(int maxMessageLength) { this.maxMessageLength = maxMessageLength; }
+    
+    public String getQueueType() { return queueType; }
+    public void setQueueType(String queueType) { this.queueType = queueType; }
+    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    
+    public boolean isOpen() { return isOpen; }
+    public void setOpen(boolean open) { isOpen = open; }
+    
+    public long getCreationTime() { return creationTime; }
+    public void setCreationTime(long creationTime) { this.creationTime = creationTime; }
+    
+    public int getEnabledInputOutput() { return enabledInputOutput; }
+    public void setEnabledInputOutput(int enabledInputOutput) { this.enabledInputOutput = enabledInputOutput; }
+    
+    @Override
+    public String toString() {
+        return String.format(
+            "QueueInfo{Name=%s, Manager=%s, Depth=%d, MaxDepth=%d, MaxLen=%d}",
+            queueName, queueManagerName, currentDepth, maxQueueDepth, maxMessageLength
+        );
+    }
+}
+```
+
+---
+
+### 3. UTILITY CLASSES (com.messagequeue.util)
+
+#### ValidationUtil.java
+```java
+package com.messagequeue.util;
+
+import com.messagequeue.exception.ConfigurationException;
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * Utility class for validating configuration and input parameters.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class ValidationUtil {
+    
+    /**
+     * Validates connection configuration.
+     * 
+     * @param host the hostname
+     * @param port the port number
+     * @param queueManagerName the queue manager name
+     * @throws ConfigurationException if validation fails
+     */
+    public static void validateConnectionConfig(String host, int port, 
+                                                String queueManagerName) throws ConfigurationException {
+        if (StringUtils.isBlank(host)) {
+            throw new ConfigurationException("Host cannot be empty");
+        }
+        
+        if (port <= 0 || port > 65535) {
+            throw new ConfigurationException("Port must be between 1 and 65535, got: " + port);
+        }
+        
+        if (StringUtils.isBlank(queueManagerName)) {
+            throw new ConfigurationException("Queue Manager name cannot be empty");
+        }
+    }
+    
+    /**
+     * Validates SSL configuration.
+     * 
+     * @param truststorePath path to truststore file
+     * @param keystorePath path to keystore file
+     * @throws ConfigurationException if validation fails
+     */
+    public static void validateSSLConfig(String truststorePath, 
+                                        String keystorePath) throws ConfigurationException {
+        if (StringUtils.isBlank(truststorePath)) {
+            throw new ConfigurationException("Truststore path cannot be empty");
+        }
+        
+        if (StringUtils.isBlank(keystorePath)) {
+            throw new ConfigurationException("Keystore path cannot be empty");
+        }
+    }
+    
+    /**
+     * Validates message content.
+     * 
+     * @param content the message content
+     * @param maxLength maximum allowed message length
+     * @throws ConfigurationException if validation fails
+     */
+    public static void validateMessageContent(String content, int maxLength) 
+            throws ConfigurationException {
+        if (StringUtils.isBlank(content)) {
+            throw new ConfigurationException("Message content cannot be empty");
+        }
+        
+        if (content.length() > maxLength) {
+            throw new ConfigurationException(
+                String.format("Message exceeds maximum length. Current: %d, Max: %d", 
+                    content.length(), maxLength)
+            );
+        }
+    }
+    
+    /**
+     * Validates message priority.
+     * 
+     * @param priority the message priority (0-9)
+     * @throws ConfigurationException if validation fails
+     */
+    public static void validateMessagePriority(int priority) throws ConfigurationException {
+        if (priority < 0 || priority > 9) {
+            throw new ConfigurationException("Message priority must be between 0 and 9, got: " + priority);
+        }
+    }
+}
+```
+
+#### SSLUtil.java
+```java
+package com.messagequeue.util;
+
+import com.messagequeue.exception.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+
+/**
+ * Utility class for SSL/TLS configuration and setup.
+ * Handles certificate loading and SSL context creation.
+ * 
+ * @author MQ System Development Team
+ * @version 1.0.0
+ */
+public class SSLUtil {
+    private static final Logger logger = LoggerFactory.getLogger(SSLUtil.class);
+    
+    /**
+     * Creates an SSL context with provided certificates.
+     * 
+     * @param trustStorePath path to truststore file
+     * @param trustStorePassword password for truststore
+     * @param keyStorePath path to keystore file
+     * @param keyStorePassword password for keystore
+     * @return configured SSLContext
+     * @throws ConfigurationException if SSL setup fails
+     */
+    public static SSLContext createSSLContext(String trustStorePath, String trustStorePassword,
+                                             String keyStorePath, String keyStorePassword) 
+            throws ConfigurationException {
+        try {
+            // Load truststore
+            KeyStore trustStore = loadKeyStore(trustStorePath, trustStorePassword.toCharArray());
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(trustStore);
+            
+            // Load keystore
+            KeyStore keyStore = loadKeyStore(keyStorePath, keyStorePassword.toCharArray());
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(
+                KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(keyStore, keyStorePassword.toCharArray());
+            
+            // Create SSL context
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new java.security.SecureRandom());
+            
+            logger.info("SSL context created successfully");
+            return sslContext;
+            
+        } catch (Exception e) {
+            throw new ConfigurationException("Failed to create SSL context: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Loads a keystore from file.
+     * 
+     * @param storePath path to keystore file
+     * @param storePassword password for keystore
+     * @return loaded KeyStore
+     * @throws ConfigurationException if loading fails
+     */
+    private static KeyStore loadKeyStore(String storePath, char[] storePassword) 
+            throws ConfigurationException {
+        try (FileInputStream fis = new FileInputStream(storePath)) {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(fis, storePassword);
+            logger.debug("Loaded keystore from: {}", storePath);
+            return keyStore;
+            
+        } catch (IOException | java.security.KeyStoreException | 
+                 java.security.NoSuchAlgorithmException | 
+                 java.security.cert.CertificateException e) {
+            throw new ConfigurationException("Failed to load keystore: " + storePath, e);
+        }
+    }
+}
+```
+
+---
+
+This comprehensive Java implementation provides all the core classes needed. Please continue reading for the service classes.
