@@ -1,0 +1,137 @@
+import com.ibm.mq.*;
+import com.ibm.mq.constants.MQConstants;
+import com.ibm.mq.pcf.*;
+
+public class MQPCFUtility {
+
+    private final PCFMessageAgent agent;
+
+    public MQPCFUtility(MQQueueManager qMgr) throws MQException {
+        this.agent = new PCFMessageAgent(qMgr);
+    }
+
+    /* ---------------- QUEUE DETAILS ---------------- */
+
+    public void displayAllQueues() throws Exception {
+        PCFMessage request = new PCFMessage(MQConstants.MQCMD_INQUIRE_Q);
+        request.addParameter(MQConstants.MQCA_Q_NAME, "*");
+        request.addParameter(MQConstants.MQIA_Q_TYPE, MQConstants.MQQT_ALL);
+
+        PCFMessage[] responses = agent.send(request);
+        for (PCFMessage res : responses) {
+            System.out.println("Queue: " + res.getStringParameterValue(MQConstants.MQCA_Q_NAME));
+            System.out.println("Desc : " + res.getStringParameterValue(MQConstants.MQCA_Q_DESC));
+            System.out.println("Depth: " + res.getIntParameterValue(MQConstants.MQIA_CURRENT_Q_DEPTH));
+            System.out.println("------");
+        }
+    }
+
+    /* ---------------- CHANNEL DEFINITIONS ---------------- */
+
+    public void displayChannels() throws Exception {
+        PCFMessage req = new PCFMessage(MQConstants.MQCMD_INQUIRE_CHANNEL);
+        req.addParameter(MQConstants.MQCA_CHANNEL_NAME, "*");
+
+        PCFMessage[] res = agent.send(req);
+        for (PCFMessage msg : res) {
+            System.out.println("Channel : " + msg.getStringParameterValue(MQConstants.MQCA_CHANNEL_NAME));
+            System.out.println("Type    : " + msg.getIntParameterValue(MQConstants.MQIA_CHANNEL_TYPE));
+            System.out.println("Desc    : " + msg.getStringParameterValue(MQConstants.MQCA_DESC));
+            System.out.println("XMITQ   : " + msg.getStringParameterValue(MQConstants.MQCA_XMIT_Q_NAME));
+            System.out.println("------");
+        }
+    }
+
+    /* ---------------- CHANNEL STATUS ---------------- */
+
+    public void displayChannelStatus() throws Exception {
+        PCFMessage req = new PCFMessage(MQConstants.MQCMD_INQUIRE_CHANNEL_STATUS);
+        req.addParameter(MQConstants.MQCA_CHANNEL_NAME, "*");
+
+        PCFMessage[] res = agent.send(req);
+        for (PCFMessage msg : res) {
+            System.out.println("Channel : " + msg.getStringParameterValue(MQConstants.MQCA_CHANNEL_NAME));
+            System.out.println("Status  : " + msg.getIntParameterValue(MQConstants.MQIA_CHANNEL_STATUS));
+            System.out.println("Conn    : " + msg.getStringParameterValue(MQConstants.MQCA_CONNECTION_NAME));
+            System.out.println("User    : " + msg.getStringParameterValue(MQConstants.MQCA_MCA_USER_ID));
+            System.out.println("------");
+        }
+    }
+
+    /* ---------------- QUEUE MANAGER INFO ---------------- */
+
+    public void displayQMGR() throws Exception {
+        PCFMessage req = new PCFMessage(MQConstants.MQCMD_INQUIRE_Q_MGR);
+
+        PCFMessage[] res = agent.send(req);
+        PCFMessage msg = res[0];
+
+        System.out.println("QM Name : " + msg.getStringParameterValue(MQConstants.MQCA_Q_MGR_NAME));
+        System.out.println("Desc    : " + msg.getStringParameterValue(MQConstants.MQCA_Q_MGR_DESC));
+        System.out.println("DLQ     : " + msg.getStringParameterValue(MQConstants.MQCA_DEAD_LETTER_Q_NAME));
+    }
+
+    /* ---------------- CONNECTIONS ---------------- */
+
+    public void displayConnections() throws Exception {
+        PCFMessage req = new PCFMessage(MQConstants.MQCMD_INQUIRE_CONNECTION);
+
+        PCFMessage[] res = agent.send(req);
+        for (PCFMessage msg : res) {
+            System.out.println("ConnID  : " + msg.getByteParameterValue(MQConstants.MQBACF_CONNECTION_ID));
+            System.out.println("App     : " + msg.getStringParameterValue(MQConstants.MQCACF_APPL_NAME));
+            System.out.println("Channel : " + msg.getStringParameterValue(MQConstants.MQCACF_CHANNEL_NAME));
+            System.out.println("User    : " + msg.getStringParameterValue(MQConstants.MQCACF_USER_IDENTIFIER));
+            System.out.println("------");
+        }
+    }
+
+    /* ---------------- SUBSCRIPTIONS ---------------- */
+
+    public void displaySubscriptions() throws Exception {
+        PCFMessage req = new PCFMessage(MQConstants.MQCMD_INQUIRE_SUBSCRIPTION);
+        req.addParameter(MQConstants.MQCACF_SUB_NAME, "*");
+
+        PCFMessage[] res = agent.send(req);
+        for (PCFMessage msg : res) {
+            System.out.println("Sub Name : " + msg.getStringParameterValue(MQConstants.MQCACF_SUB_NAME));
+            System.out.println("Topic   : " + msg.getStringParameterValue(MQConstants.MQCA_TOPIC_STRING));
+            System.out.println("Queue   : " + msg.getStringParameterValue(MQConstants.MQCA_DESTINATION));
+            System.out.println("------");
+        }
+    }
+
+    /* ---------------- TOPICS ---------------- */
+
+    public void displayTopics() throws Exception {
+        PCFMessage req = new PCFMessage(MQConstants.MQCMD_INQUIRE_TOPIC);
+        req.addParameter(MQConstants.MQCA_TOPIC_NAME, "*");
+
+        PCFMessage[] res = agent.send(req);
+        for (PCFMessage msg : res) {
+            System.out.println("Topic   : " + msg.getStringParameterValue(MQConstants.MQCA_TOPIC_NAME));
+            System.out.println("String  : " + msg.getStringParameterValue(MQConstants.MQCA_TOPIC_STRING));
+            System.out.println("Desc    : " + msg.getStringParameterValue(MQConstants.MQCA_TOPIC_DESC));
+            System.out.println("------");
+        }
+    }
+
+    /* ---------------- AUTH RECORDS ---------------- */
+
+    public void displayAuthRecords() throws Exception {
+        PCFMessage req = new PCFMessage(MQConstants.MQCMD_INQUIRE_AUTH_RECS);
+        req.addParameter(MQConstants.MQCACF_PROFILE_NAME, "*");
+
+        PCFMessage[] res = agent.send(req);
+        for (PCFMessage msg : res) {
+            System.out.println("Profile : " + msg.getStringParameterValue(MQConstants.MQCACF_PROFILE_NAME));
+            System.out.println("Entity  : " + msg.getStringParameterValue(MQConstants.MQCACF_ENTITY_NAME));
+            System.out.println("Type    : " + msg.getIntParameterValue(MQConstants.MQIA_ENTITY_TYPE));
+            System.out.println("------");
+        }
+    }
+
+    public void close() {
+        agent.disconnect();
+    }
+}
