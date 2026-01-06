@@ -1,0 +1,186 @@
+{
+  "messageType": "MT103",
+  "fields": [
+    {
+      "tag": "20",
+      "block": 4,
+      "options": [""],
+      "name": "Transaction Reference Number",
+      "mandatory": true,
+      "repeatable": false,
+      "format": {
+        "type": "simple",
+        "maxLength": 16,
+        "regex": "^[A-Z0-9]{1,16}$"
+      },
+      "mtKeyTemplate": "b4.20"
+    },
+    {
+      "tag": "23B",
+      "block": 4,
+      "options": ["B"],
+      "name": "Bank Operation Code",
+      "mandatory": true,
+      "repeatable": false,
+      "format": {
+        "type": "simple",
+        "maxLength": 4,
+        "regex": "^[A-Z]{4}$"
+      },
+      "mtKeyTemplate": "b4.23B"
+    },
+    {
+      "tag": "32A",
+      "block": 4,
+      "options": ["A"],
+      "name": "Value Date / Currency / Interbank Settled",
+      "mandatory": true,
+      "repeatable": false,
+      "format": {
+        "type": "patternSplit",
+        "pattern": "YYMMDDCCCAMT",
+        "components": [
+          { "name": "date",   "start": 0, "length": 6, "type": "date_YYMMDD" },
+          { "name": "ccy",    "start": 6, "length": 3, "type": "currency" },
+          { "name": "amount", "start": 9,               "type": "amount" }
+        ]
+      },
+      "mtKeyTemplate": "b4.32A.{component}"
+    },
+
+    {
+      "tag": "50K",
+      "block": 4,
+      "options": ["K"],
+      "name": "Ordering Customer",
+      "mandatory": true,
+      "repeatable": false,
+      "format": {
+        "type": "partyLines",
+        "lineRoles": [
+          { "index": 0, "role": "account", "ifStartsWith": "/", "stripPrefix": "/" },
+          { "index": 1, "role": "name" },
+          { "indexFrom": 2, "role": "address", "repeat": true }
+        ]
+      },
+      "mtKeyTemplate": "b4.50K[{index}].{role}{addressIndex?}"
+    },
+
+    {
+      "tag": "52A",
+      "block": 4,
+      "options": ["A"],
+      "name": "Ordering Institution",
+      "mandatory": false,
+      "repeatable": false,
+      "format": {
+        "type": "bicWithOptionalAccount"
+      },
+      "mtKeyTemplate": "b4.52A[{index}].{component}"
+    },
+    {
+      "tag": "53A",
+      "block": 4,
+      "options": ["A"],
+      "name": "Sender's Correspondent",
+      "mandatory": false,
+      "repeatable": false,
+      "format": {
+        "type": "bicWithOptionalAccount"
+      },
+      "mtKeyTemplate": "b4.53A[{index}].{component}"
+    },
+    {
+      "tag": "54A",
+      "block": 4,
+      "options": ["A"],
+      "name": "Receiver's Correspondent",
+      "mandatory": false,
+      "repeatable": false,
+      "format": {
+        "type": "bicWithOptionalAccount"
+      },
+      "mtKeyTemplate": "b4.54A[{index}].{component}"
+    },
+    {
+      "tag": "56A",
+      "block": 4,
+      "options": ["A"],
+      "name": "Intermediary",
+      "mandatory": false,
+      "repeatable": false,
+      "format": {
+        "type": "bicWithOptionalAccount"
+      },
+      "mtKeyTemplate": "b4.56A[{index}].{component}"
+    },
+    {
+      "tag": "57A",
+      "block": 4,
+      "options": ["A"],
+      "name": "Account With Institution",
+      "mandatory": false,
+      "repeatable": false,
+      "format": {
+        "type": "bicWithOptionalAccount"
+      },
+      "mtKeyTemplate": "b4.57A[{index}].{component}"
+    },
+
+    {
+      "tag": "59",
+      "block": 4,
+      "options": [""],
+      "name": "Beneficiary Customer",
+      "mandatory": true,
+      "repeatable": false,
+      "format": {
+        "type": "partyLines",
+        "lineRoles": [
+          { "index": 0, "role": "account", "ifStartsWith": "/", "stripPrefix": "/" },
+          { "index": 1, "role": "name" },
+          { "indexFrom": 2, "role": "address", "repeat": true }
+        ]
+      },
+      "mtKeyTemplate": "b4.59[{index}].{role}{addressIndex?}"
+    },
+
+    {
+      "tag": "70",
+      "block": 4,
+      "options": [""],
+      "name": "Remittance Information",
+      "mandatory": false,
+      "repeatable": false,
+      "format": {
+        "type": "simple"
+      },
+      "mtKeyTemplate": "b4.70"
+    },
+      {
+        "tag": "71A",
+        "block": 4,
+        "options": [""],
+        "name": "Details of Charges",
+        "mandatory": true,
+        "repeatable": false,
+        "format": {
+          "type": "simple"
+        },
+        "mtKeyTemplate": "b4.71A"
+      },
+      {
+        "tag": "72",
+        "block": 4,
+        "options": [""],
+        "name": "Sender to Receiver Information",
+        "mandatory": false,
+        "repeatable": false,
+        "format": {
+          "type": "simple"
+        },
+        "mtKeyTemplate": "b4.72"
+      }
+	  
+  ]
+}

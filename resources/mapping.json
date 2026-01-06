@@ -1,0 +1,28 @@
+{
+  "mappings": [
+    { "mtKey": "b1.senderBic",      "mxPath": "GrpHdr.InstgAgt.FinInstnId.BICFI" },
+    { "mtKey": "b2.receiverBic",    "mxPath": "GrpHdr.InstdAgt.FinInstnId.BICFI" },
+
+    { "mtKey": "b3.uetr121",        "mxPath": "Tx.PmtId.UETR" },
+    { "mtKey": "b3.mir108",         "mxPath": "Tx.PmtId.TxId" },
+
+    { "mtKey": "b4.20",             "mxPath": "GrpHdr.MsgId" },
+    { "mtKey": "b4.20",             "mxPath": "Tx.PmtId.EndToEndId" },
+
+    { "mtKey": "b4.23B",            "mxPath": "Tx.PmtTpInf.CtgyPurp" },
+
+    { "mtKey": "b4.32A.date",       "mxPath": "Tx.IntrBkSttlmDt" },
+    { "mtKey": "b4.32A.ccy",        "mxPath": "Tx.IntrBkSttlmAmt.ccy" },
+    { "mtKey": "b4.32A.amount",     "mxPath": "Tx.IntrBkSttlmAmt.value" },
+	{ "mtKey": "b3.uetr121t",     	"mxPath": "Tx.UETR" },
+    { "mtKey": "b4.32A.amount",     "mxPath": "GrpHdr.CtrlSum" },
+
+    { "mtKey": "b4.50K[0].name",    "mxPath": "Tx.Dbtr.Nm" },
+    { "mtKey": "b4.50K[0].account", "mxPath": "Tx.Dbtr.Acct.Id" },
+
+    { "mtKey": "b4.59[0].name",     "mxPath": "Tx.Cdtr.Nm" },
+    { "mtKey": "b4.59[0].account",  "mxPath": "Tx.Cdtr.Acct.Id" },
+
+    { "mtKey": "b4.70",             "mxPath": "Tx.RmtInf.Ustrd" }
+  ]
+}

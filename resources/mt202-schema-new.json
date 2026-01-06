@@ -1,0 +1,512 @@
+{
+  "messageType": "MT202/MT202COV",
+  "blocks": [1, 2, 3, 4, 5],
+  "fields": [
+    {
+      "tag": "B1",
+      "block": 1,
+      "name": "Basic Header Block",
+      "mandatory": true,
+      "maxOccurs": 1,
+      "format": { "type": "block1" },
+      "components": [
+        { "name": "applicationId", "mtKey": "b1.appId" },
+        { "name": "serviceId",     "mtKey": "b1.serviceId" },
+        { "name": "ltAddress",     "mtKey": "b1.ltAddress" },
+        { "name": "senderBic11",   "mtKey": "b1.senderBic11" },
+        { "name": "sessionNumber", "mtKey": "b1.session" },
+        { "name": "sequenceNumber","mtKey": "b1.sequence" }
+      ]
+    },
+    {
+      "tag": "B2",
+      "block": 2,
+      "name": "Application Header Block",
+      "mandatory": true,
+      "maxOccurs": 1,
+      "format": { "type": "block2" },
+      "components": [
+        { "name": "direction",   "mtKey": "b2.direction" },
+        { "name": "msgType",     "mtKey": "b2.msgType" },
+        { "name": "inputTime",   "mtKey": "b2.inputTime" },
+        { "name": "mir",         "mtKey": "b2.mir" },
+        { "name": "receiverBic", "mtKey": "b2.receiverBic" },
+        { "name": "priority",    "mtKey": "b2.priority" }
+      ]
+    },
+
+    {
+      "tag": "108",
+      "block": 3,
+      "name": "MIR",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": {
+        "type": "block3Tag",
+        "maxLength": 23
+      },
+      "components": [
+        { "name": "mir", "mtKey": "b3.108" }
+      ]
+    },
+    {
+      "tag": "121",
+      "block": 3,
+      "name": "UETR",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": {
+        "type": "block3Tag",
+        "maxLength": 36
+      },
+      "components": [
+        { "name": "uetr", "mtKey": "b3.121.uetr" }
+      ]
+    },
+    {
+      "tag": "119",
+      "block": 3,
+      "name": "Validation Flag / STP Indicator",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": {
+        "type": "block3Tag",
+        "maxLength": 3
+      },
+      "components": [
+        { "name": "code", "mtKey": "b3.119.code" },
+        { "name": "isCov", "mtKey": "b3.119.isCov" }
+      ]
+    },
+    {
+      "tag": "111",
+      "block": 3,
+      "name": "Service Type Identifier",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": {
+        "type": "block3Tag",
+        "maxLength": 3
+      },
+      "components": [
+        { "name": "serviceType", "mtKey": "b3.111.serviceType" }
+      ]
+    },
+    {
+      "tag": "113",
+      "block": 3,
+      "name": "Banking Priority",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": {
+        "type": "block3Tag",
+        "maxLength": 3
+      },
+      "components": [
+        { "name": "priority", "mtKey": "b3.113.priority" }
+      ]
+    },
+
+    {
+      "tag": "20",
+      "block": 4,
+      "name": "Transaction Reference Number",
+      "mandatory": true,
+      "maxOccurs": 1,
+      "format": {
+        "type": "simple",
+        "maxLength": 16
+      },
+      "components": [
+        { "name": "ref", "mtKey": "b4.20" }
+      ]
+    },
+    {
+      "tag": "21",
+      "block": 4,
+      "name": "Related Reference",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": {
+        "type": "simple",
+        "maxLength": 16
+      },
+      "components": [
+        { "name": "ref", "mtKey": "b4.21" }
+      ]
+    },
+    {
+      "tag": "13C",
+      "block": 4,
+      "name": "Time Indication",
+      "mandatory": false,
+      "maxOccurs": 3,
+      "format": {
+        "type": "timeIndication"
+      },
+      "components": [
+        { "name": "code",   "mtKey": "b4.13C.code" },
+        { "name": "time",   "mtKey": "b4.13C.time" },
+        { "name": "sign",   "mtKey": "b4.13C.sign" },
+        { "name": "offset", "mtKey": "b4.13C.offset" }
+      ]
+    },
+    {
+      "tag": "32A",
+      "block": 4,
+      "name": "Value Date / Currency / Interbank Settled Amount",
+      "mandatory": true,
+      "maxOccurs": 1,
+      "format": {
+        "type": "dateCurrencyAmount"
+      },
+      "components": [
+        { "name": "date",   "mtKey": "b4.32A.date" },
+        { "name": "ccy",    "mtKey": "b4.32A.ccy" },
+        { "name": "amount", "mtKey": "b4.32A.amount" }
+      ]
+    },
+    {
+      "tag": "33B",
+      "block": 4,
+      "name": "Currency / Instructed Amount",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": {
+        "type": "currencyAmount"
+      },
+      "components": [
+        { "name": "ccy",    "mtKey": "b4.33B.ccy" },
+        { "name": "amount", "mtKey": "b4.33B.amount" }
+      ]
+    },
+
+    {
+      "tag": "52A",
+      "option": "A",
+      "block": 4,
+      "name": "Ordering Institution (Option A)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "bicParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.52A.account" },
+        { "name": "bic",     "mtKey": "b4.52A.bic" }
+      ]
+    },
+    {
+      "tag": "52D",
+      "option": "D",
+      "block": 4,
+      "name": "Ordering Institution (Option D)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "b4.52D.account" },
+        { "name": "name",     "mtKey": "b4.52D.name" },
+        { "name": "address0", "mtKey": "b4.52D.address0" },
+        { "name": "address1", "mtKey": "b4.52D.address1" },
+        { "name": "address2", "mtKey": "b4.52D.address2" }
+      ]
+    },
+
+    {
+      "tag": "53A",
+      "option": "A",
+      "block": 4,
+      "name": "Sender's Correspondent (Option A)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "bicParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.53A.account" },
+        { "name": "bic",     "mtKey": "b4.53A.bic" }
+      ]
+    },
+    {
+      "tag": "53B",
+      "option": "B",
+      "block": 4,
+      "name": "Sender's Correspondent (Option B)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "accountParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.53B.account" },
+        { "name": "name",    "mtKey": "b4.53B.name" }
+      ]
+    },
+    {
+      "tag": "53D",
+      "option": "D",
+      "block": 4,
+      "name": "Sender's Correspondent (Option D)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "b4.53D.account" },
+        { "name": "name",     "mtKey": "b4.53D.name" },
+        { "name": "address0", "mtKey": "b4.53D.address0" },
+        { "name": "address1", "mtKey": "b4.53D.address1" },
+        { "name": "address2", "mtKey": "b4.53D.address2" }
+      ]
+    },
+
+    {
+      "tag": "54A",
+      "option": "A",
+      "block": 4,
+      "name": "Receiver's Correspondent (Option A)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "bicParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.54A.account" },
+        { "name": "bic",     "mtKey": "b4.54A.bic" }
+      ]
+    },
+    {
+      "tag": "54B",
+      "option": "B",
+      "block": 4,
+      "name": "Receiver's Correspondent (Option B)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "accountParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.54B.account" },
+        { "name": "name",    "mtKey": "b4.54B.name" }
+      ]
+    },
+    {
+      "tag": "54D",
+      "option": "D",
+      "block": 4,
+      "name": "Receiver's Correspondent (Option D)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "b4.54D.account" },
+        { "name": "name",     "mtKey": "b4.54D.name" },
+        { "name": "address0", "mtKey": "b4.54D.address0" },
+        { "name": "address1", "mtKey": "b4.54D.address1" },
+        { "name": "address2", "mtKey": "b4.54D.address2" }
+      ]
+    },
+
+    {
+      "tag": "56A",
+      "option": "A",
+      "block": 4,
+      "name": "Intermediary Institution (Option A)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "bicParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.56A.account" },
+        { "name": "bic",     "mtKey": "b4.56A.bic" }
+      ]
+    },
+    {
+      "tag": "56B",
+      "option": "B",
+      "block": 4,
+      "name": "Intermediary Institution (Option B)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "accountParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.56B.account" },
+        { "name": "name",    "mtKey": "b4.56B.name" }
+      ]
+    },
+    {
+      "tag": "56D",
+      "option": "D",
+      "block": 4,
+      "name": "Intermediary Institution (Option D)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "b4.56D.account" },
+        { "name": "name",     "mtKey": "b4.56D.name" },
+        { "name": "address0", "mtKey": "b4.56D.address0" },
+        { "name": "address1", "mtKey": "b4.56D.address1" },
+        { "name": "address2", "mtKey": "b4.56D.address2" }
+      ]
+    },
+
+    {
+      "tag": "57A",
+      "option": "A",
+      "block": 4,
+      "name": "Account With Institution (Option A)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "bicParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.57A.account" },
+        { "name": "bic",     "mtKey": "b4.57A.bic" }
+      ]
+    },
+    {
+      "tag": "57B",
+      "option": "B",
+      "block": 4,
+      "name": "Account With Institution (Option B)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "accountParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.57B.account" },
+        { "name": "name",    "mtKey": "b4.57B.name" }
+      ]
+    },
+    {
+      "tag": "57D",
+      "option": "D",
+      "block": 4,
+      "name": "Account With Institution (Option D)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "b4.57D.account" },
+        { "name": "name",     "mtKey": "b4.57D.name" },
+        { "name": "address0", "mtKey": "b4.57D.address0" },
+        { "name": "address1", "mtKey": "b4.57D.address1" },
+        { "name": "address2", "mtKey": "b4.57D.address2" }
+      ]
+    },
+
+    {
+      "tag": "58A",
+      "option": "A",
+      "block": 4,
+      "name": "Beneficiary Institution (Option A)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "bicParty" },
+      "components": [
+        { "name": "account", "mtKey": "b4.58A.account" },
+        { "name": "bic",     "mtKey": "b4.58A.bic" }
+      ]
+    },
+    {
+      "tag": "58D",
+      "option": "D",
+      "block": 4,
+      "name": "Beneficiary Institution (Option D)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "b4.58D.account" },
+        { "name": "name",     "mtKey": "b4.58D.name" },
+        { "name": "address0", "mtKey": "b4.58D.address0" },
+        { "name": "address1", "mtKey": "b4.58D.address1" },
+        { "name": "address2", "mtKey": "b4.58D.address2" }
+      ]
+    },
+
+    {
+      "tag": "72",
+      "block": 4,
+      "name": "Sender to Receiver Information",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "freeTextLines", "maxLines": 6 },
+      "components": [
+        { "name": "line0", "mtKey": "b4.72[0]" },
+        { "name": "line1", "mtKey": "b4.72[1]" },
+        { "name": "line2", "mtKey": "b4.72[2]" },
+        { "name": "line3", "mtKey": "b4.72[3]" },
+        { "name": "line4", "mtKey": "b4.72[4]" },
+        { "name": "line5", "mtKey": "b4.72[5]" }
+      ]
+    },
+    {
+      "tag": "U20",
+      "block": 4,
+      "name": "Underlying Tx Reference (Field 20 of MT103)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "simple", "maxLength": 16 },
+      "components": [
+        { "name": "ref", "mtKey": "cov.20" }
+      ]
+    },
+    {
+      "tag": "U23B",
+      "block": 4,
+      "name": "Underlying Bank Operation Code (Field 23B of MT103)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "simple", "maxLength": 4 },
+      "components": [
+        { "name": "code", "mtKey": "cov.23B.code" }
+      ]
+    },
+    {
+      "tag": "U32A",
+      "block": 4,
+      "name": "Underlying Value Date/Currency/Amount (Field 32A of MT103)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "dateCurrencyAmount" },
+      "components": [
+        { "name": "date",   "mtKey": "cov.32A.date" },
+        { "name": "ccy",    "mtKey": "cov.32A.ccy" },
+        { "name": "amount", "mtKey": "cov.32A.amount" }
+      ]
+    },
+    {
+      "tag": "U50K",
+      "block": 4,
+      "name": "Underlying Ordering Customer (Field 50K of MT103)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "cov.50K.account" },
+        { "name": "name",     "mtKey": "cov.50K.name" },
+        { "name": "address0", "mtKey": "cov.50K.address0" },
+        { "name": "address1", "mtKey": "cov.50K.address1" },
+        { "name": "address2", "mtKey": "cov.50K.address2" }
+      ]
+    },
+    {
+      "tag": "U59",
+      "block": 4,
+      "name": "Underlying Beneficiary Customer (Field 59 of MT103)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "partyLines", "maxLines": 4 },
+      "components": [
+        { "name": "account",  "mtKey": "cov.59.account" },
+        { "name": "name",     "mtKey": "cov.59.name" },
+        { "name": "address0", "mtKey": "cov.59.address0" },
+        { "name": "address1", "mtKey": "cov.59.address1" },
+        { "name": "address2", "mtKey": "cov.59.address2" }
+      ]
+    },
+    {
+      "tag": "U70",
+      "block": 4,
+      "name": "Underlying Remittance Information (Field 70 of MT103)",
+      "mandatory": false,
+      "maxOccurs": 1,
+      "format": { "type": "freeTextLines", "maxLines": 4 },
+      "components": [
+        { "name": "line0", "mtKey": "cov.70[0]" },
+        { "name": "line1", "mtKey": "cov.70[1]" },
+        { "name": "line2", "mtKey": "cov.70[2]" },
+        { "name": "line3", "mtKey": "cov.70[3]" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,276 @@
+{
+  "mtKey": "MT202/MT202COV",
+  "mxPath": "pacs.009.001.08",
+  "direction": "MTtoMX",
+  "variants": [
+    {
+      "name": "pacs.009 CORE",
+      "condition": "b3.119.code != 'COV'",
+      "rules": [
+        {
+          "name": "AppHdr_From",
+          "mtKey": "b1.senderBic11",
+          "mxPath": "/Document/AppHdr/Fr/FIId/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "AppHdr_To",
+          "mtKey": "b2.receiverBic",
+          "mxPath": "/Document/AppHdr/To/FIId/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "AppHdr_BizMsgIdr",
+          "mtKey": null,
+          "mxPath": "/Document/AppHdr/BizMsgIdr",
+          "action": "generateUUID"
+        },
+        {
+          "name": "AppHdr_MsgDefIdr",
+          "mtKey": null,
+          "mxPath": "/Document/AppHdr/MsgDefIdr",
+          "action": "constant",
+          "value": "pacs.009.001.08"
+        },
+
+        {
+          "name": "GrpHdr_MsgId",
+          "mtKey": "b4.20",
+          "mxPath": "/Document/FICdtTrf/GrpHdr/MsgId",
+          "action": "copy"
+        },
+        {
+          "name": "GrpHdr_CreDtTm_from13C",
+          "condition": "exists(b4.13C.time)",
+          "mtKey": "b4.13C",
+          "mxPath": "/Document/FICdtTrf/GrpHdr/CreDtTm",
+          "action": "buildDateTimeFrom13C"
+        },
+        {
+          "name": "GrpHdr_CreDtTm_default",
+          "condition": "!exists(b4.13C.time)",
+          "mtKey": null,
+          "mxPath": "/Document/FICdtTrf/GrpHdr/CreDtTm",
+          "action": "currentDateTimeISO"
+        },
+        {
+          "name": "GrpHdr_NbOfTxs",
+          "mtKey": null,
+          "mxPath": "/Document/FICdtTrf/GrpHdr/NbOfTxs",
+          "action": "constant",
+          "value": "1"
+        },
+        {
+          "name": "GrpHdr_SttlmMtd",
+          "mtKey": null,
+          "mxPath": "/Document/FICdtTrf/GrpHdr/SttlmInf/SttlmMtd",
+          "action": "constant",
+          "value": "INDA"
+        },
+
+        {
+          "name": "Tx_IntrBkSttlmAmt_Value",
+          "mtKey": "b4.32A.amount",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/value",
+          "action": "numericNormalize"
+        },
+        {
+          "name": "Tx_IntrBkSttlmAmt_Ccy",
+          "mtKey": "b4.32A.ccy",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/IntrBkSttlmAmt/ccy",
+          "action": "copy"
+        },
+        {
+          "name": "Tx_IntrBkSttlmDt",
+          "mtKey": "b4.32A.date",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/IntrBkSttlmDt",
+          "action": "formatDateYYMMDDtoYYYYMMDD"
+        },
+
+        {
+          "name": "Tx_PmtId_InstrId",
+          "mtKey": "b4.21",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/PmtId/InstrId",
+          "action": "copyIfPresent"
+        },
+        {
+          "name": "Tx_PmtId_TxId",
+          "mtKey": "b4.20",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/PmtId/TxId",
+          "action": "copy"
+        },
+
+        {
+          "name": "DbtrAgt_From_52_or_B1",
+          "condition": "exists(b4.52A.bic)",
+          "mtKey": "b4.52A.bic",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/DbtrAgt/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "DbtrAgt_FromHeader_Fallback",
+          "condition": "!exists(b4.52A.bic)",
+          "mtKey": "b1.senderBic11",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/DbtrAgt/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "CdtrAgt_From_57A_or_B2",
+          "condition": "exists(b4.57A.bic)",
+          "mtKey": "b4.57A.bic",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "CdtrAgt_FromHeader_Fallback",
+          "condition": "!exists(b4.57A.bic)",
+          "mtKey": "b2.receiverBic",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI",
+          "action": "copy"
+        },
+
+        {
+          "name": "IntrmyAgt1_From56A",
+          "condition": "exists(b4.56A.bic)",
+          "mtKey": "b4.56A.bic",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/IntrmyAgt1/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "InstgAgt_From53A",
+          "condition": "exists(b4.53A.bic)",
+          "mtKey": "b4.53A.bic",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/InstgAgt/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "InstdAgt_From54A",
+          "condition": "exists(b4.54A.bic)",
+          "mtKey": "b4.54A.bic",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/InstdAgt/FinInstnId/BICFI",
+          "action": "copy"
+        },
+        {
+          "name": "CdtrAgt_Override_From58A",
+          "condition": "exists(b4.58A.bic)",
+          "mtKey": "b4.58A.bic",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/CdtrAgt/FinInstnId/BICFI",
+          "action": "copy"
+        },
+
+        {
+          "name": "RmtInf_From72",
+          "condition": "exists(b4.72[0])",
+          "mtKey": "b4.72",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/RmtInf/Ustrd[1]",
+          "action": "joinLinesAndTrim"
+        }
+      ]
+    },
+    {
+      "name": "pacs.009 COV",
+      "condition": "b3.119.code == 'COV'",
+      "rules": [
+        { "ref": "AppHdr_From" },
+        { "ref": "AppHdr_To" },
+        { "ref": "AppHdr_BizMsgIdr" },
+        { "ref": "AppHdr_MsgDefIdr" },
+        { "ref": "GrpHdr_MsgId" },
+        { "ref": "GrpHdr_CreDtTm_from13C" },
+        { "ref": "GrpHdr_CreDtTm_default" },
+        { "ref": "GrpHdr_NbOfTxs" },
+        { "ref": "GrpHdr_SttlmMtd" },
+        { "ref": "Tx_IntrBkSttlmAmt_Value" },
+        { "ref": "Tx_IntrBkSttlmAmt_Ccy" },
+        { "ref": "Tx_IntrBkSttlmDt" },
+        { "ref": "Tx_PmtId_InstrId" },
+        { "ref": "Tx_PmtId_TxId" },
+        { "ref": "DbtrAgt_From_52_or_B1" },
+        { "ref": "DbtrAgt_FromHeader_Fallback" },
+        { "ref": "CdtrAgt_From_57A_or_B2" },
+        { "ref": "CdtrAgt_FromHeader_Fallback" },
+        { "ref": "IntrmyAgt1_From56A" },
+        { "ref": "InstgAgt_From53A" },
+        { "ref": "InstdAgt_From54A" },
+        { "ref": "CdtrAgt_Override_From58A" },
+        { "ref": "RmtInf_From72" },
+
+        {
+          "name": "UCT_UETR",
+          "mtKey": "b3.121.uetr",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/PmtId/UETR",
+          "action": "copyIfPresent"
+        },
+        {
+          "name": "UCT_PmtId_EndToEndId",
+          "mtKey": "cov.20",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/PmtId/EndToEndId",
+          "action": "copyIfPresent"
+        },
+        {
+          "name": "UCT_PmtTpInf_CtgyPurp",
+          "mtKey": "cov.23B.code",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/PmtTpInf/CtgyPurp/Prtry",
+          "action": "copyIfPresent"
+        },
+        {
+          "name": "UCT_InstdAmt",
+          "mtKey": "cov.32A.amount",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/InstdAmt/value",
+          "action": "numericNormalize"
+        },
+        {
+          "name": "UCT_InstdAmtCcy",
+          "mtKey": "cov.32A.ccy",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/InstdAmt/ccy",
+          "action": "copyIfPresent"
+        },
+        {
+          "name": "UCT_ReqdExctnDt",
+          "mtKey": "cov.32A.date",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/ReqdExctnDt",
+          "action": "formatDateYYMMDDtoYYYYMMDD"
+        },
+
+        {
+          "name": "UCT_Debtor_50K",
+          "condition": "exists(cov.50K.name)",
+          "mtKey": "cov.50K",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/Dbtr",
+          "action": "mapPartyLines"
+        },
+        {
+          "name": "UCT_Creditor_59",
+          "condition": "exists(cov.59.name)",
+          "mtKey": "cov.59",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/Cdtr",
+          "action": "mapPartyLines"
+        },
+        {
+          "name": "UCT_RmtInf_FromCov70",
+          "condition": "exists(cov.70[0])",
+          "mtKey": "cov.70",
+          "mxPath": "/Document/FICdtTrf/CdtTrfTxInf/UndrlygCstmrCdtTrf/RmtInf/Ustrd[1]",
+          "action": "joinLinesAndTrim"
+        }
+      ]
+    }
+  ],
+  "defaults": {
+    "GrpHdr/SttlmInf/SttlmMtd": "INDA",
+    "CdtTrfTxInf/ChrgBr": "SLEV"
+  },
+  "validation": {
+    "mandatorySourceFields": [
+      "b4.20",
+      "b4.32A.date",
+      "b4.32A.ccy",
+      "b4.32A.amount"
+    ],
+    "mandatoryTargetPaths": [
+      "/Document/FICdtTrf/GrpHdr/MsgId",
+      "/Document/FICdtTrf/CdtTrfTxInf/IntrBkSttlmAmt",
+      "/Document/FICdtTrf/CdtTrfTxInf/IntrBkSttlmDt"
+    ]
+  }
+}
