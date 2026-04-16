@@ -79,17 +79,30 @@ public class XmlValueEscaper {
         System.out.println("\nEscaped:\n" + output);
     }
 
-    private static String preCleanXml(String xml) {
-        // Replace & first (but avoid already escaped ones)
-        xml = xml.replaceAll("&(?!amp;|lt;|gt;|quot;|apos;)", "&amp;");
-    
-        // Replace < and > only inside text (basic handling)
-        xml = xml.replaceAll(">([^<]*)<", match -> {
-            String content = match.group(1);
-            content = content.replace("<", "&lt;").replace(">", "&gt;");
-            return ">" + content + "<";
-        });
-    
-        return xml;
+    import java.util.regex.*;
+
+private static String preCleanXml(String xml) {
+
+    // Step 1: Fix '&' (avoid double escaping)
+    xml = xml.replaceAll("&(?!amp;|lt;|gt;|quot;|apos;)", "&amp;");
+
+    // Step 2: Fix < and > inside text nodes
+    Pattern pattern = Pattern.compile(">([^<]*)<");
+    Matcher matcher = pattern.matcher(xml);
+
+    StringBuffer result = new StringBuffer();
+
+    while (matcher.find()) {
+        String content = matcher.group(1);
+
+        // Escape only inside text
+        content = content.replace("<", "&lt;").replace(">", "&gt;");
+
+        matcher.appendReplacement(result, ">" + content + "<");
     }
+
+    matcher.appendTail(result);
+
+    return result.toString();
+}
 }
