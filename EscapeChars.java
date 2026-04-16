@@ -78,4 +78,18 @@ public class XmlValueEscaper {
         System.out.println("Original:\n" + input);
         System.out.println("\nEscaped:\n" + output);
     }
+
+    private static String preCleanXml(String xml) {
+        // Replace & first (but avoid already escaped ones)
+        xml = xml.replaceAll("&(?!amp;|lt;|gt;|quot;|apos;)", "&amp;");
+    
+        // Replace < and > only inside text (basic handling)
+        xml = xml.replaceAll(">([^<]*)<", match -> {
+            String content = match.group(1);
+            content = content.replace("<", "&lt;").replace(">", "&gt;");
+            return ">" + content + "<";
+        });
+    
+        return xml;
+    }
 }
