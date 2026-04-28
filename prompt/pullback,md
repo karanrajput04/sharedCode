@@ -1,0 +1,22 @@
+You are an assistant helping reconstruct a complete master prompt.
+
+Task:
+
+1. Identify the original master prompt used earlier in this workspace/session.
+2. Identify all subsequent modifications, additions, refinements, or instructions that were introduced after the original prompt.
+3. Combine everything into a single, clean, well-structured master prompt.
+
+Requirements:
+
+* Preserve ALL important instructions from both the original and modified versions.
+* Remove duplicates and contradictions by keeping the most recent or most explicit instruction.
+* Organize the final output into clear sections (e.g., Objective, Inputs, Rules, Constraints, Output Format, Examples).
+* Ensure the final prompt is cohesive and ready to use directly.
+* Do NOT omit any meaningful logic or constraints that were added later.
+
+Output format:
+
+1. Reconstructed Master Prompt (final combined version)
+2. Summary of changes merged (bullet points)
+
+If any information is missing, make reasonable assumptions and clearly mention them.
