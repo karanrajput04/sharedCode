@@ -1,8 +1,5 @@
+We identified a misconfiguration issue in the current production version that is impacting the deployment setup.
 
-Hi Team,
+Could you please deploy the latest version to production at the earliest convenience to resolve the issue?
 
-We are planning Praveen’s farewell on 22nd May. We will be arranging a gift and cake for the occasion.
-
-To make the arrangements, we are collecting contributions from everyone. Your support and participation would be greatly appreciated.
-
-Thank you!
+Please let us know once the deployment is completed or if any additional information is required from our side.
