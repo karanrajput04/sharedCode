@@ -1,5 +1,7 @@
 I hope you and your family are doing well.
 
-As your maternity leave and extended work-from-home period have now concluded, we'd like to welcome you back to the office. Please let us know your planned date of joining so we can make the necessary arrangements.
+As your maternity leave and the extended work-from-home arrangement have now concluded, we would like to welcome you back to the office. We look forward to having you rejoin the team and reconnect with everyone in person.
 
-We're looking forward to having you back with the team. If you have any questions or would like to discuss anything, please feel free to reach out.
+Please let us know your planned date of return to the office. If there is anything you would like to discuss, feel free to reach out.
+
+Looking forward to seeing you back soon.
