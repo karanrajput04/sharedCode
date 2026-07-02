@@ -1,15 +1,37 @@
-#### Key Contributions
 
-* Contributed to the RO and ZM MQ Manager activities.
-* Played a major role in the Swiss MT202COV Glueback enablement.
-* Took the initiative to support the LSE migration and drove the assigned activities proactively.
-* Contributed to the implementation of generic solutions for Sanctions.
+#### Technical Competency
 
-#### Areas for Improvement
+**Strengths**
 
-* Take end-to-end ownership of implementations, including requirements analysis, development, testing, deployment, and production release.
-* Perform deeper technical analysis before reaching out to stakeholders for issue resolution. Initial troubleshooting and root cause analysis should be completed independently wherever possible. This is particularly important for production incidents (e.g., Cartridge Team incident – **Defect ID: [Add Defect ID]**).
-* When assigned to PVT activities, ensure active participation in all relevant calls and discussions to stay aligned with the team and drive timely resolution of issues.
+* Contributed to the FED FRB testing activities, which were critical at the organizational level, and supported successful execution.
+* Developed a good understanding of the DQE framework and contributed to multiple China CIPS implementation flows, including XSD preparation.
+* Worked on the JO Contingency flow until the activity was put on hold due to changing business requirements.
+* Actively participated in the LSE migration activities and supported the team in meeting project milestones.
 
+#### Ownership & Accountability
 
-Y has made valuable technical contributions during the review period, particularly in the Swiss MT202COV Glueback enablement, LSE migration, and Sanctions implementation. Going forward, focusing on end-to-end ownership, strengthening independent technical analysis, and maintaining active participation in project discussions will further enhance his overall effectiveness and readiness for larger responsibilities.
+**Strengths**
+
+* Demonstrated commitment by taking ownership of assigned tasks and delivering them within the expected timelines.
+* Adapted well to changing priorities and continued contributing across multiple initiatives.
+
+**Development Areas**
+
+* Take greater ownership of end-to-end deliverables, from requirement understanding through implementation, testing, and production support.
+* Be more proactive in identifying potential risks, dependencies, and improvement opportunities instead of waiting for direction.
+
+#### Collaboration & Communication
+
+**Strengths**
+
+* Collaborated effectively with team members across different project activities.
+* Maintained a positive attitude while working on multiple assignments.
+
+**Development Areas**
+
+* Increase participation in technical discussions and knowledge-sharing sessions to enhance collaboration and visibility.
+* Continue to strengthen communication by proactively providing status updates and raising blockers at an early stage.
+
+#### Overall Feedback
+
+HS has made valuable contributions across several important initiatives, including FED FRB testing, China CIPS implementation, JO Contingency, and LSE migration. She has demonstrated good technical capability and adaptability while working on multiple assignments. Going forward, focusing on end-to-end ownership, proactive communication, and deeper technical involvement will further enhance her effectiveness and prepare her for larger responsibilities within the team.
