@@ -1,1 +1,1 @@
-
+Yn provided an internal knowledge transfer (KT) session to the team, shared key process insights, and proactively guided team members whenever they got stuck, ensuring smooth progress and effective knowledge sharing.
