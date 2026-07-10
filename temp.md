@@ -1,25 +1,18 @@
-Here's a polished mid-year feedback you can use:
+Overall Feedback
+Madhuri has shown good progress in the MyFormat for CIPS initiative and has demonstrated the ability to understand technical requirements. However, there are areas where improved ownership, communication, and timely delivery are expected.
 
-### Mid-Year Feedback – Ab
+Strengths
 
-**Overall Feedback**
+Demonstrated good progress in the MyFormat for CIPS implementation.
+Understands technical requirements well and delivers quality work when focused.
+Willing to learn and take up assigned tasks.
 
-Abiya joined the team recently and has demonstrated a good learning pace. She has been proactive in understanding the application landscape and has quickly started contributing to the team's deliverables. Her willingness to take ownership and participate in technical discussions has been appreciated.
+Areas for Improvement
 
-**Strengths**
+Improve sprint execution and complete assigned activities within committed timelines (e.g., LSE Migration, PACS.004 Incoming Return).
+Reduce turnaround time for small tasks and incidents (e.g., INC1326368, INC1335641).
+Provide regular progress updates and communicate blockers proactively.
+Ensure proper task handover and status updates before planned leave (e.g., Task 1404374).
+Attend Scrum ceremonies, walkthroughs, and technical discussions consistently and on time.
 
-* Quickly understood the VPEL services and their end-to-end flows, including **CS, AML, and GFTTS**.
-* For the **pain.001** assignment, she performed an in-depth analysis and provided detailed insights into the pain.001 processing and GFTTS flows.
-* Takes initiative in completing assigned tasks and willingly participates in new activities and responsibilities.
-* Quickly understood the VPEL MongoDB query structure and was able to analyze the driver version issue effectively.
-* Gained a good understanding of the sanctions flows in a short period and has been providing valuable inputs during defect analysis and troubleshooting.
-
-**Areas for Improvement**
-
-* Continue to deepen understanding of the end-to-end business processes and cross-service dependencies.
-* Focus on improving estimation and planning for assigned tasks to ensure predictable delivery.
-* Increase participation in design and architecture discussions by proactively sharing ideas and suggestions.
-* Continue strengthening debugging and root cause analysis skills for complex production issues.
-* Enhance documentation of analysis and solutions to improve knowledge sharing within the team.
-
-Overall, Abiya has made a positive start and is progressing well. With continued learning and exposure to more complex scenarios, she is expected to make even stronger technical contributions in the coming months.
+Overall: Madhuri has good potential. Focusing on delivery commitments, communication, and ownership will help her make a stronger impact in the coming review period.
