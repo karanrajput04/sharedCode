@@ -1,9 +1,23 @@
-Hi G,
+Hi B,
 
-We have completed the development from the VPLE side for RO GF. However, while reviewing the implementation, we identified a gap in the requirement understanding/alignment.
+As discussed, we have identified that the parsing failures for **pacs.002** and **camt** messages in the DL application are caused by an unexpected date format being received from Benefit in the production environment.
 
-In the current PROD setup for RO, VP and DQE send their respective JSON payloads directly to BigData, and VPLE is not involved in that flow. Additionally, VP's BigData flow is currently not onboarded in EL.
+We have implemented a solution to accommodate the newly observed date format, and the changes are now available in UAT for validation.
 
-If we intend to continue with the existing PROD approach, we will need to enable the VPLE BigData flow to support the required functionality.
+Before we proceed with the deployment, we need your confirmation on the following:
 
-Could you please review this and confirm the expected approach so that we can proceed with the implementation accordingly? Let us know if a discussion is required to align on the requirement.
+1. The application currently supports the following date formats:
+
+   * `<yyddmm>`
+   * `<yyyy-dd-mm>`
+
+   For the `<yyddmm>` format, should we expect the incoming value to include a timezone offset?
+
+2. If a timezone offset is received, should the application convert the timestamp to the local timezone, or should the value be processed as received?
+
+3. Apart from the above, are there any additional date formats that we should plan to support?
+
+Once we receive your confirmation, we will complete the UAT validation, obtain CQE sign-off, and proceed with the production deployment.
+
+Regards,
+[Your Name]
