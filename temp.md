@@ -1,31 +1,7 @@
-Hi Team,
+In recognition of outstanding contribution to the successful enrollment of HH Standardization in PROD.
 
-We are currently facing an issue in the FFF Sanction flow when local chars are present in the payload. Due to the presence of local chars in the fields, we are currently unable to split and map the data correctly to the Enrich fields.
+Your technical expertise, dedication, and perseverance were key to achieving this important milestone. Your willingness to take ownership, overcome challenges, and support the team throughout the implementation is highly appreciated.
 
-Based on our analysis, **to support local chars in VolPay, changes are required in the existing implementation**.
+Your contribution reflects a strong commitment to delivering high-quality outcomes and making a meaningful impact on the team's success.
 
-The proposed changes are as follows:
-
-* For the mentioned fields **59ln and 52ln**, we will split the received data based on the new line (`\n`) character.
-* After splitting:
-
-  * The first part will be mapped to `<EnrichNm>`.
-  * The second part will be mapped to `<EnrichAdr>`.
-* If no new line character is present, the complete received data will be mapped to `<EnrichNm>`.
-
-**Examples:**
-
-**Case 1 – No new line character:**
-
-`<59ln><CHINESE CHARS></59ln>`
-
-→ `<EnrichNm><CHINESE CHARS></EnrichNm>`
-
-**Case 2 – New line character present:**
-
-`<59ln><CHINESE CHARS>\n<CHINESE CHARS Adr></59ln>`
-
-→ `<EnrichNm><CHINESE CHARS></EnrichNm>`
-→ `<EnrichAdr><CHINESE CHARS Adr></EnrichAdr>`
-
-Please let us know if there are any concerns with the above approach or if we can proceed with these changes.
+Congratulations on this well-deserved recognition! Keep raising the bar and achieving greater milestones.
