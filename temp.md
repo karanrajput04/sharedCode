@@ -1,21 +1,19 @@
-### Year-End Feedback – Arzoo (Scrum Master)
+### Year-End Feedback – Linga (DevOps Team)
 
 **1. What are the Employee's Strengths?**
 
-Arzoo has done an excellent job managing both the VPEL and NP teams smoothly and efficiently. She maintains good visibility and tracking of work items, ensuring that priorities, dependencies, action items, and delivery timelines are followed up consistently.
+Linga has been a dependable and supportive partner throughout the year. He demonstrates a good understanding of infrastructure and DevOps processes, which helps the development team address infrastructure-related challenges effectively.
 
-One of her key strengths is her understanding of the technical workflows, which enables her to facilitate meaningful discussions and coordinate effectively with various stakeholders. Her technical awareness helps her understand team dependencies, identify potential blockers, and drive discussions toward actionable outcomes.
+One of his key strengths is maintaining well-organized documentation and technical information, improving transparency and making it easier for teams to refer to relevant details when needed. He consistently supports the resolution of infrastructure-related issues and collaborates with development teams to minimize disruptions to development and deployment activities.
 
-She demonstrates strong organizational skills, ownership, and collaboration. Her ability to manage multiple teams while maintaining effective communication and alignment across stakeholders is highly appreciated.
+His technical knowledge, structured approach to documentation, and willingness to help make him a valuable partner in ensuring smooth day-to-day operations and project delivery.
 
 **2. Development Area**
 
-She can continue leveraging her understanding of technical workflows to drive continuous improvement in sprint planning, execution, and delivery predictability.
+Linga can further improve his effectiveness by prioritizing and responding to development team members' requests during urgent or critical situations. Timely engagement and clear communication regarding the status of urgent issues would help the team manage dependencies, minimize delivery delays, and resolve critical infrastructure challenges more effectively.
 
 **3. General Feedback**
 
-Overall, Arzoo has been a dependable and effective Scrum Master, managing both VPEL and NP teams smoothly while maintaining good control over work items and follow-ups. Her understanding of technical flows, combined with her strong coordination and stakeholder management skills, makes her an effective link between development teams and business stakeholders.
+Overall, Linga has been a reliable and supportive member of the DevOps team. His technical understanding, well-maintained documentation, and consistent assistance in resolving infrastructure-related issues have contributed positively to the development team's productivity and project delivery.
 
-I appreciate her proactive approach, organizational skills, and consistent support in keeping the teams aligned and focused on delivery commitments. Her ability to manage multiple teams and facilitate effective communication contributes positively to team collaboration and execution.
-
-I look forward to continuing this strong collaboration and working together to further improve delivery efficiency, predictability, and overall team performance in the coming year.
+I appreciate his collaboration and continued support in addressing infrastructure challenges. Going forward, greater focus on supporting urgent requests and maintaining clear communication during critical situations will further strengthen collaboration between the DevOps and development teams.
