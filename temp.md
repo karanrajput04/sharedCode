@@ -62,3 +62,33 @@
 - **In-House Development:** Promoted in-house development and internal technical ownership to build sustainable team capabilities, improve delivery flexibility, and reduce dependency on legacy solutions or external expertise where feasible.
 - **Stakeholder Management:** Maintained effective communication with business and technology stakeholders, aligning priorities, managing dependencies, and facilitating timely decisions across multiple concurrent deliveries.
 - **Overall Leadership Impact:** Demonstrated end-to-end ownership across people leadership, technical delivery, production stability, risk and control, and business outcomes while taking on additional responsibilities beyond the original delivery plan.
+
+
+
+
+
+======================================
+
+
+
+### Year-End Feedback – Sumit 
+
+**1. What are the Employee's Strengths?**
+
+Sumit has been a reliable and supportive partner throughout the year. He has a very good understanding of MQ connectivity and related technical workflows, which enables him to troubleshoot issues effectively and drive them toward resolution quickly.
+
+One of his key strengths is his ability to identify and involve the right stakeholders during triage, ensuring that issues are routed appropriately and investigated efficiently. His technical knowledge, structured troubleshooting approach, and timely coordination help minimize delays and reduce the impact of technical issues on development and delivery activities.
+
+He also maintains well-organized technical documentation, making information easier to access and refer to when required. His collaborative attitude, problem-solving skills, and willingness to support the development team make him a valuable partner in resolving infrastructure and connectivity challenges.
+
+**2. Development Area**
+
+Sumit can further enhance his contribution by continuing to strengthen proactive monitoring and identifying recurring MQ connectivity issues to help prevent future occurrences. Documenting common failure scenarios, root causes, and proven resolution steps would also help improve knowledge sharing and enable faster troubleshooting across teams.
+
+**3. General Feedback**
+
+Overall, Sumit has been a dependable and effective member of the TEM team. His strong understanding of MQ connectivity, ability to resolve issues quickly, and effectiveness in involving the right stakeholders during triage have been particularly valuable to the development team.
+
+His technical expertise and collaborative approach help streamline issue resolution, minimize disruption, and support smooth project execution. I appreciate his continued support, ownership, and commitment to resolving technical challenges efficiently.
+
+I look forward to continuing this strong collaboration in the coming year and further strengthening our partnership to improve operational stability and delivery efficiency.
